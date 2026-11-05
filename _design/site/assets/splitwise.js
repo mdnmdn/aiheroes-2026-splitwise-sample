@@ -186,7 +186,7 @@
   let toastEl, toastTimer;
   /** Short confirmation message at the bottom of the screen (role=status). */
   function toast(msg) {
-    if (!toastEl) {
+    if (!toastEl?.isConnected) {  // a boosted swap can detach the old element
       toastEl = document.createElement('div');
       toastEl.className = 'toast'; toastEl.setAttribute('role', 'status'); toastEl.setAttribute('aria-live', 'polite');
       document.body.append(toastEl);

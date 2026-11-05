@@ -1,0 +1,4 @@
+{# Out-of-band parts: the share on each tile, the hint and the toggle link. No swap of the target. #}
+{% for m in members %}<span class="share num od-nowrap" id="share-{{ m.id }}" hx-swap-oob="true">{% if m.id in preview.shares %}{{ preview.shares[m.id]|money(group.currency) }}{% endif %}</span>
+{% endfor %}<p class="hint" id="f-participants-hint" hx-swap-oob="true">{{ preview.hint }}</p>
+<button type="button" class="link-btn" id="toggle-all" data-toggle-all hx-swap-oob="true">{{ "Clear all" if preview.all_selected else "Select all" }}</button>

@@ -35,8 +35,20 @@ import re
 import sys
 from pathlib import Path
 
-SKIP_DIRS = {".git", ".venv", "node_modules", "__pycache__", ".mypy_cache", ".pytest_cache",
-             ".ruff_cache", "dist", "build", ".obsidian", ".idea", ".vscode"}
+SKIP_DIRS = {
+    ".git",
+    ".venv",
+    "node_modules",
+    "__pycache__",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "dist",
+    "build",
+    ".obsidian",
+    ".idea",
+    ".vscode",
+}
 RANGE_RE = re.compile(r"^(\d*-\d*|\d+)(,(\d*-\d*|\d+))*$")
 SIZE_RE = re.compile(r"^\s*(\d+(?:\.\d+)?)\s*([kmg]?)b?\s*$", re.I)
 MULTI_SPACE_RE = re.compile(r"(?<=\S)[ \t]{2,}")
@@ -68,7 +80,9 @@ def parse_ranges(text: str) -> list[tuple[int, int | None]]:
         a, b = part.split("-", 1) if "-" in part else (part, part)
         lo, hi = int(a) if a else 1, int(b) if b else None
         if lo < 1 or (hi is not None and hi < lo):
-            raise Fail(f"bad range {part!r} in {text!r}: lines start at 1 and the end is not before the start")
+            raise Fail(
+                f"bad range {part!r} in {text!r}: lines start at 1 and the end is not before the start"
+            )
         out.append((lo, hi))
     return out
 
@@ -123,7 +137,11 @@ def table_rule(body: str) -> str:
     out = []
     for c in cells:
         c = c.strip()
-        out.append((":" if c.startswith(":") else "") + "---" + (":" if c.endswith(":") and len(c) > 1 else ""))
+        out.append(
+            (":" if c.startswith(":") else "")
+            + "---"
+            + (":" if c.endswith(":") and len(c) > 1 else "")
+        )
     return "|" + "|".join(out) + "|"
 
 
@@ -142,9 +160,11 @@ def compact(lines: list[tuple[int, str]]) -> list[tuple[int, str]]:
             in_fence = not in_fence
         elif not in_fence:
             indent = line[: len(line) - len(line.lstrip())]
-            body = MULTI_SPACE_RE.sub(" ", line[len(indent):])
+            body = MULTI_SPACE_RE.sub(" ", line[len(indent) :])
             if body.startswith("|"):
-                body = table_rule(body) if TABLE_RULE_RE.match(body) else TABLE_PAD_RE.sub("|", body)
+                body = (
+                    table_rule(body) if TABLE_RULE_RE.match(body) else TABLE_PAD_RE.sub("|", body)
+                )
             line = indent + body
             if not line and out and not out[-1][1]:
                 continue
@@ -217,13 +237,21 @@ def summary(files: list[Path], base: Path) -> None:
     rows = []
     for p in files:
         data = p.read_bytes()
-        rows.append((show(p, base), data.count(b"\n") + (not data.endswith(b"\n") and bool(data)), len(data)))
+        rows.append(
+            (
+                show(p, base),
+                data.count(b"\n") + (not data.endswith(b"\n") and bool(data)),
+                len(data),
+            )
+        )
     width = max((len(r[0]) for r in rows), default=4)
     print(f"{'file'.ljust(width)}  {'lines':>6}  {'size':>9}  {'~tokens':>8}")
     for name, lines, size in rows:
         print(f"{name.ljust(width)}  {lines:>6}  {kb(size):>9}  {size // 4:>8}")
     total_l, total_b = sum(r[1] for r in rows), sum(r[2] for r in rows)
-    print(f"{'total: ' + str(len(rows)) + ' files':<{width}}  {total_l:>6}  {kb(total_b):>9}  {total_b // 4:>8}")
+    print(
+        f"{'total: ' + str(len(rows)) + ' files':<{width}}  {total_l:>6}  {kb(total_b):>9}  {total_b // 4:>8}"
+    )
 
 
 def merge(old: Ranges, new: Ranges) -> Ranges:
@@ -251,30 +279,83 @@ def collect(args, default_ranges: Ranges) -> tuple[dict[Path, tuple[Path, Ranges
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0],
-                                 epilog=__doc__.split("\n", 2)[2],
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__.split("\n\n")[0],
+        epilog=__doc__.split("\n", 2)[2],
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     ap.add_argument("targets", nargs="+", metavar="TARGET", help="file or folder, optional :RANGE")
-    ap.add_argument("-s", "--summary", action="store_true", help="list files with lines, size and ~tokens; no content")
-    ap.add_argument("-H", "--headings", action="store_true",
-                    help="outline: markdown headings and Python def/class lines, numbered")
-    ap.add_argument("-g", "--grep", metavar="REGEX", help="only lines that match REGEX (numbered). Files without a match are listed at the end")
-    ap.add_argument("-C", "--context", type=int, default=0, metavar="N", help="with --grep: N lines before and after each match")
+    ap.add_argument(
+        "-s",
+        "--summary",
+        action="store_true",
+        help="list files with lines, size and ~tokens; no content",
+    )
+    ap.add_argument(
+        "-H",
+        "--headings",
+        action="store_true",
+        help="outline: markdown headings and Python def/class lines, numbered",
+    )
+    ap.add_argument(
+        "-g",
+        "--grep",
+        metavar="REGEX",
+        help="only lines that match REGEX (numbered). Files without a match are listed at the end",
+    )
+    ap.add_argument(
+        "-C",
+        "--context",
+        type=int,
+        default=0,
+        metavar="N",
+        help="with --grep: N lines before and after each match",
+    )
     ap.add_argument("-I", "--ignore-case", action="store_true", help="with --grep: ignore case")
-    ap.add_argument("-l", "--lines", metavar="RANGE", help="default line range for targets without their own")
-    ap.add_argument("-c", "--compact", action="store_true",
-                    help="trim spaces, squeeze tables, collapse blank-line runs (code fences stay as is)")
+    ap.add_argument(
+        "-l", "--lines", metavar="RANGE", help="default line range for targets without their own"
+    )
+    ap.add_argument(
+        "-c",
+        "--compact",
+        action="store_true",
+        help="trim spaces, squeeze tables, collapse blank-line runs (code fences stay as is)",
+    )
     ap.add_argument("--no-blank", action="store_true", help="drop every blank line")
-    ap.add_argument("--no-frontmatter", action="store_true", help="drop a leading YAML frontmatter block")
-    ap.add_argument("-n", "--line-numbers", action="store_true", help="prefix each line with its number")
-    ap.add_argument("--max-size", type=parse_size, default=parse_size("100k"),
-                    help="total output budget (default 100k). Files past it are listed, not printed")
-    ap.add_argument("--max-file-size", type=parse_size, default=parse_size("20k"),
-                    help="budget per file (default 20k). A longer file is cut, with the range of the rest")
-    ap.add_argument("-i", "--include", action="append", default=[], metavar="GLOB",
-                    help="in folders, keep only names matching GLOB (repeatable), e.g. '*.md'")
-    ap.add_argument("-x", "--exclude", action="append", default=[], metavar="GLOB",
-                    help="skip names or paths matching GLOB (repeatable)")
+    ap.add_argument(
+        "--no-frontmatter", action="store_true", help="drop a leading YAML frontmatter block"
+    )
+    ap.add_argument(
+        "-n", "--line-numbers", action="store_true", help="prefix each line with its number"
+    )
+    ap.add_argument(
+        "--max-size",
+        type=parse_size,
+        default=parse_size("100k"),
+        help="total output budget (default 100k). Files past it are listed, not printed",
+    )
+    ap.add_argument(
+        "--max-file-size",
+        type=parse_size,
+        default=parse_size("20k"),
+        help="budget per file (default 20k). A longer file is cut, with the range of the rest",
+    )
+    ap.add_argument(
+        "-i",
+        "--include",
+        action="append",
+        default=[],
+        metavar="GLOB",
+        help="in folders, keep only names matching GLOB (repeatable), e.g. '*.md'",
+    )
+    ap.add_argument(
+        "-x",
+        "--exclude",
+        action="append",
+        default=[],
+        metavar="GLOB",
+        help="skip names or paths matching GLOB (repeatable)",
+    )
     ap.add_argument("--hidden", action="store_true", help="include dotfiles and dot-folders")
     args = ap.parse_intermixed_args()
 
@@ -305,7 +386,11 @@ def main() -> int:
         if args.headings:
             only = headings(raw, path)
         if pattern is not None:
-            only = grep(raw, pattern, max(0, args.context)) if only is None else only & grep(raw, pattern, 0)
+            only = (
+                grep(raw, pattern, max(0, args.context))
+                if only is None
+                else only & grep(raw, pattern, 0)
+            )
         chosen = select(raw, ranges, strip_frontmatter(raw) if args.no_frontmatter else 0, only)
         if only is not None and not chosen:
             no_match.append(name)
@@ -343,7 +428,9 @@ def main() -> int:
             span = "empty file"
         elif not chosen:
             asked = fmt_spans([(a, b if b is not None else len(raw)) for a, b in ranges or []])
-            span = f"no lines selected: asked {asked or 'frontmatter only'}, file has {len(raw)} lines"
+            span = (
+                f"no lines selected: asked {asked or 'frontmatter only'}, file has {len(raw)} lines"
+            )
         elif only is not None:
             span = f"{sum(1 for _, t in lines if t)} lines selected of {len(raw)}"
         else:
@@ -353,7 +440,7 @@ def main() -> int:
             print("\n".join(body))
         if cut_at is not None:
             k = seg_of[cut_at]
-            rest = [(cut_at, spans[k][1])] + spans[k + 1:]
+            rest = [(cut_at, spans[k][1])] + spans[k + 1 :]
             print(f"[cut: budget reached. Rest: {name}:{fmt_spans(rest)}]")
         print()
         used += size

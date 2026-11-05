@@ -1,0 +1,17 @@
+{% from "components/feedback.html" import settled_badge %}
+{% from "components/money.html" import stat %}
+{% from "components/rows.html" import member_row %}
+<div class="card" id="members-region" hx-get="/groups/{{ group.id }}/members" hx-trigger="members-changed from:body, ledger-changed from:body" hx-target="this" hx-swap="outerHTML">
+  <div class="stats od-grid">
+    {{ stat(summary.total_spent|money(group.currency), "Total of the expenses") }}
+    {{ stat(my_balance|signed_money(group.currency), "Your balance · " ~ (my_balance|balance_label)) }}
+  </div>
+  <ul class="rows">
+    {% for row in rows %}{{ member_row(row, group) }}{% endfor %}
+  </ul>
+  {% if summary.has_transactions and summary.is_settled %}
+  <div class="settle od-row">{{ settled_badge("All settled up") }}</div>
+  {% elif not summary.has_transactions %}
+  <div class="settle od-row"><p>Add a payment to see who owes whom.</p></div>
+  {% endif %}
+</div>

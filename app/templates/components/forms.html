@@ -1,0 +1,52 @@
+{# The control gets id "f-<key>". The call block holds the control. #}
+{% macro field(key, label, error="", hint="", hidden=false) %}
+<div class="field od-field" data-k="{{ key }}"{% if hidden %} hidden{% endif %}>
+  <label for="f-{{ key }}">{{ label }}</label>
+  {{ caller() }}
+  {% if hint %}<p class="hint" id="f-{{ key }}-hint">{{ hint }}</p>{% endif %}
+  <p class="err" id="f-{{ key }}-err">{{ error }}</p>
+</div>
+{% endmacro %}
+
+{# options: a list of (value, label) pairs. #}
+{% macro select_field(key, label, options, value="", error="", hint="") %}
+<div class="field od-field" data-k="{{ key }}">
+  <label for="f-{{ key }}">{{ label }}</label>
+  <select class="input" id="f-{{ key }}" name="{{ key }}"{% if error %} aria-invalid="true"{% endif %} aria-describedby="{% if hint %}f-{{ key }}-hint {% endif %}f-{{ key }}-err">
+    {% for v, text in options %}<option value="{{ v }}"{% if v|string == value|string %} selected{% endif %}>{{ text }}</option>{% endfor %}
+  </select>
+  {% if hint %}<p class="hint" id="f-{{ key }}-hint">{{ hint }}</p>{% endif %}
+  <p class="err" id="f-{{ key }}-err">{{ error }}</p>
+</div>
+{% endmacro %}
+
+{# options: a list of (value, label) pairs. The legend is read by screen readers only. #}
+{% macro segmented(name, options, value, legend="Show", id="") %}
+<fieldset class="menu-group"><legend class="sr-only">{{ legend }}</legend>
+  <div class="segmented"{% if id %} id="{{ id }}"{% endif %}>
+    {% for v, text in options %}<label><input type="radio"{% if id %} id="{{ id }}-{{ v }}"{% endif %} name="{{ name }}" value="{{ v }}"{% if v == value %} checked{% endif %}><span>{{ text }}</span></label>{% endfor %}
+  </div>
+</fieldset>
+{% endmacro %}
+
+{# value: the text of the input. symbol: the currency symbol. The error shows under the field. #}
+{% macro money_field(key, label, symbol, value="", error="", placeholder="0.00") %}
+<div class="field od-field" data-k="{{ key }}">
+  <label for="f-{{ key }}">{{ label }}</label>
+  <div class="money"><span class="cur-sym" aria-hidden="true">{{ symbol }}</span><input class="input" id="f-{{ key }}" name="{{ key }}" value="{{ value }}" inputmode="decimal" autocomplete="off" placeholder="{{ placeholder }}"{% if error %} aria-invalid="true"{% endif %} aria-describedby="f-{{ key }}-err"></div>
+  <p class="err" id="f-{{ key }}-err">{{ error }}</p>
+</div>
+{% endmacro %}
+
+{# members: Member list. checked: list of id texts. shares: member id to minor units.
+   attrs: htmx attributes of the fieldset, for the live preview. #}
+{% macro check_tiles(name, label, members, checked, shares, currency, hint, all_selected, error="", attrs={}) %}
+<fieldset class="field od-field" data-k="participants" aria-describedby="f-participants-err f-participants-hint"{% for k, v in attrs.items() %} {{ k }}="{{ v }}"{% endfor %}>
+  <div class="legend-row od-row"><legend>{{ label }}</legend><button type="button" class="link-btn" id="toggle-all" data-toggle-all>{{ "Clear all" if all_selected else "Select all" }}</button></div>
+  <div class="checks od-grid">
+    {% for m in members %}<label class="check"><input type="checkbox" name="{{ name }}" value="{{ m.id }}"{% if m.id|string in checked %} checked{% endif %}><span class="od-truncate">{{ m.name }}</span><span class="share num od-nowrap" id="share-{{ m.id }}">{% if m.id in shares %}{{ shares[m.id]|money(currency) }}{% endif %}</span></label>{% endfor %}
+  </div>
+  <p class="hint" id="f-participants-hint">{{ hint }}</p>
+  <p class="err" id="f-participants-err">{{ error }}</p>
+</fieldset>
+{% endmacro %}

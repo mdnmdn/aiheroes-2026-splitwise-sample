@@ -1,0 +1,64 @@
+{% from "components/navigation.html" import topbar %}
+<!doctype html>
+<html lang="en" data-user-id="{{ user.id if user else '' }}"{% if public %} data-public{% endif %}>
+<head>
+<script>
+/* Session guard. sessionStorage is the user of this tab. The cookie only carries the token of the
+   tab that loaded a page last. Runs before paint. See _docs/tech/guide-authentication.md. */
+(function () {
+  var d = document.documentElement, S = sessionStorage, token, mine;
+  try { token = S.getItem('sw_user'); mine = S.getItem('sw_user_id'); } catch (e) { return; }
+  var pub = d.hasAttribute('data-public'), loc = location;
+  var path = loc.pathname + loc.search;
+  var login = function () { loc.replace('/login?next=' + encodeURIComponent(path)); };
+  var drop = function () { try { S.removeItem('sw_user'); S.removeItem('sw_user_id'); } catch (e) {} };
+  var show = function () { d.classList.remove('sw-resuming'); };
+  if (!token) { if (!pub) login(); return; }
+  if (mine !== null && mine === d.getAttribute('data-user-id')) return;
+  var marker = null;
+  try { marker = JSON.parse(S.getItem('sw_resume')); } catch (e) {}
+  if (marker && marker.path === path && Date.now() - marker.at < 5000) {
+    drop();
+    if (!pub) login();
+    return;
+  }
+  d.classList.add('sw-resuming');
+  fetch('/login/resume', { method: 'POST', headers: { 'X-Splitwise-User': token }, credentials: 'same-origin' })
+    .then(function (r) {
+      if (r.status === 204) {
+        try { S.setItem('sw_resume', JSON.stringify({ path: path, at: Date.now() })); } catch (e) {}
+        if (pub) {
+          var n = new URLSearchParams(loc.search).get('next') || '/';
+          loc.replace(/^\/(?!\/)/.test(n) ? n : '/');
+        } else { loc.reload(); }
+      } else {
+        drop();
+        if (pub) show(); else login();
+      }
+    })
+    .catch(show);
+})();
+</script>
+<style>html.sw-resuming{visibility:hidden}</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Splitwise Lite{% endblock %} — Splitwise</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/css/splitwise.css">
+<script src="/static/js/splitwise.js"></script>
+<script src="/static/vendor/htmx.min.js" defer></script>
+<script src="/static/js/app.js" defer></script>
+{% block head %}{% endblock %}
+</head>
+<body hx-boost="true" data-user-id="{{ user.id if user else '' }}">
+<noscript><p class="noscript-banner">Splitwise Lite needs JavaScript. Turn it on in your browser.</p></noscript>
+{% if shell != "bare" %}
+<a class="skip" href="#main">Skip to content</a>
+{% block topbar %}{{ topbar(user, group=group, group_count=group_count) }}{% endblock %}
+{% endif %}
+<main class="{% block main_class %}home{% endblock %}" id="main">{% block main %}{% endblock %}</main>
+{% block after_main %}{% endblock %}
+<div id="flash" data-message="{{ flash or '' }}" hidden></div>
+<div id="dialog-host">{% block dialogs %}{% endblock %}</div>
+</body>
+</html>

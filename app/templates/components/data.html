@@ -1,0 +1,9 @@
+{% macro chip(text, hot=false, cls="") %}<span class="chip{% if hot %} hot{% endif %}{% if cls %} {{ cls }}{% endif %}">{{ text }}</span>{% endmacro %}
+
+{# index: join order or user id. The hue follows it. size: "", sm, lg. #}
+{% macro avatar(name, index=0, size="") %}<span class="avatar{% if size %} {{ size }}{% endif %}" style="--h:{{ (index * 67 + 170) % 360 }}" aria-hidden="true">{{ (name or "?")[0]|upper }}</span>{% endmacro %}
+
+{% macro code_box(code) %}<div class="code-box" aria-label="Invite code">{{ code }}</div>{% endmacro %}
+
+{# kind: expense or payment. The CSS classes keep the names of the design: .payment, .internal. #}
+{% macro tag(kind) %}<span class="tag {{ 'payment' if kind == 'expense' else 'internal' }} od-fixed">{{ "Expense" if kind == "expense" else "Payment" }}</span>{% endmacro %}

@@ -1,0 +1,21 @@
+{% from "components/buttons.html" import button %}
+{% from "components/feedback.html" import err_summary %}
+{% from "components/forms.html" import field, select_field %}
+<form class="login-card card" id="loginForm" data-new-user="{{ NEW_USER }}" method="post" action="/login" hx-post="/login" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]" aria-labelledby="loginTitle" novalidate>
+  <div class="od-row login-head">
+    <div class="brand od-row"><span class="brand-mark"><span data-icon="logo"></span></span><span>Splitwise</span></div>
+    <div data-appearance></div>
+  </div>
+  <div class="od-stack login-intro">
+    <h1 id="loginTitle">Sign in</h1>
+    <p class="muted">Choose your name, or add yourself as a new user.</p>
+  </div>
+  {{ err_summary(errors) }}
+  <input type="hidden" name="next" value="{{ next }}">
+  {{ select_field("user_id", "Who are you?", options, selected, errors.get("user_id", "")) }}
+  {% call field("name", "Your name", errors.get("name", ""), "Up to " ~ USER_NAME_MAX ~ " characters. You become a new user.", hidden=(selected != NEW_USER)) %}
+  <input class="input" id="f-name" name="name" value="{{ name }}" maxlength="{{ USER_NAME_MAX }}" autocomplete="off"{% if errors.get("name") %} aria-invalid="true"{% endif %} aria-describedby="f-name-hint f-name-err">
+  {% endcall %}
+  {{ button("Continue", "primary", "block", type="submit") }}
+  <p class="note">Simulated sign-in: no password needed.</p>
+</form>

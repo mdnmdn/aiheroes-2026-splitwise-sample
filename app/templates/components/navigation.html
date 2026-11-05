@@ -1,0 +1,40 @@
+{% from "components/data.html" import avatar, chip %}
+{% from "components/icons.html" import icon %}
+{# Group pages pass group (name, currency). Other pages pass none. #}
+{# oob: the header comes back in a mutation response and replaces #topbar. #}
+{% macro topbar(user, group=none, group_count=0, oob=false) %}
+<header class="topbar" id="topbar"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <div class="topbar-in od-row">
+    <a class="brand od-row od-fixed" href="/" aria-label="Splitwise — your groups">
+      <span class="brand-mark">{{ icon("logo") }}</span><span class="brand-name">Splitwise</span>
+    </a>
+    <span class="divider od-fixed" aria-hidden="true"></span>
+    <nav class="breadcrumb od-fill" aria-label="Breadcrumb">
+      <ol>
+        <li class="od-fixed"><a href="/"{% if not group %} aria-current="page"{% endif %}>Groups</a></li>
+        {% if group %}
+        <li class="od-fill"><button type="button" data-group-settings hx-get="/groups/{{ group.id }}/settings" hx-target="#dialog-host" hx-swap="innerHTML" aria-current="page" aria-label="{{ group.name }}, group settings"><span class="od-truncate">{{ group.name }}</span>{{ chip(group.currency, cls="od-fixed") }}</button></li>
+        {% endif %}
+      </ol>
+    </nav>
+    {% if user %}
+    <details class="menu user-menu od-fixed">
+      <summary class="user-btn" aria-label="Account: {{ user.name }}">{{ avatar(user.name, user.id, "sm") }}<span class="user-name od-truncate">{{ user.name }}</span></summary>
+      <div class="menu-pop">
+        <div class="od-row">{{ avatar(user.name, user.id) }}<div class="od-stat od-fill"><span class="row-title od-truncate">{{ user.name }}</span><span class="note">Signed in · {{ group_count }} {{ "group" if group_count == 1 else "groups" }}</span></div></div>
+        <form method="post" action="/logout"><button type="submit" class="btn secondary block" data-sign-out>{{ icon("logout") }}Sign out</button></form>
+      </div>
+    </details>
+    {% endif %}
+    <div class="od-fixed" data-appearance></div>
+  </div>
+</header>
+{% endmacro %}
+
+{# Fixed bottom bar of the group page on a narrow screen. #}
+{% macro actionbar(group) %}
+<nav class="actionbar mobile-only" aria-label="Quick actions">
+  <button class="btn secondary" type="button" hx-get="/groups/{{ group.id }}/payments/new" hx-target="#dialog-host" hx-swap="innerHTML">Add payment</button>
+  <button class="btn primary" type="button" hx-get="/groups/{{ group.id }}/expenses/new" hx-target="#dialog-host" hx-swap="innerHTML">{{ icon("plus") }}Add expense</button>
+</nav>
+{% endmacro %}

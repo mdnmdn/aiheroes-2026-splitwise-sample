@@ -23,9 +23,10 @@ conversation sounds like the next phase.
 
 ## Current phase
 
-**Product ideation.** No application code exists. The tech stack is not chosen. Git is not
-initialized. `product/` is the working surface. `features/` holds contract-only documents. `tech/`
-and `infra/` stay empty until a human decides their first subject.
+**Development.** A human chose the stack: Python, FastAPI, Jinja2 HTML with HTMX, and SQLite. Git is
+initialized. `features/` is the primary working surface. Its documents hold the contract and the
+implementation. `tech/` and `infra/` are open. `_design/` is a source. The application tree is
+`app/` and `tests/`.
 
 ---
 
@@ -90,8 +91,7 @@ infra create-tests answer "not in this phase, file to backlog".
 
 ## Development
 
-Recorded for later. A human starts this phase when the tech stack is chosen and application code
-exists.
+A human starts this phase when the tech stack is chosen.
 
 The project builds. The library compiles claims, and it also stays true of the tree.
 
@@ -125,7 +125,7 @@ human decides. *Implementation* and *Data* yield to the source.
 
 ## Changing phase
 
-A phase change is a human decision. The bookkeeper never infers it from a lively chat or a first
+A phase change is a human decision. The librarian never infers it from a lively chat or a first
 commit.
 
 1. A human rewrites **Current phase** above.

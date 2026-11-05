@@ -1,0 +1,38 @@
+{% from "components/buttons.html" import button %}
+{% from "components/feedback.html" import err_summary %}
+{% from "components/forms.html" import field, select_field, money_field %}
+{% from "components/overlays.html" import dlg_head %}
+{% set group = view.group %}
+{% set errors = view.errors %}
+{% set base = "/groups/" ~ group.id ~ "/payments" %}
+{% set url = base ~ ("/" ~ view.payment_id if view.payment_id else "") %}
+{% set options = [] %}
+{% for m in view.members %}{% set _ = options.append((m.id, m.name)) %}{% endfor %}
+<form class="dlg" id="paymentForm" method="post" action="{{ url }}" hx-post="{{ url }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]" novalidate>
+  {{ dlg_head("payTitle", "Edit payment" if view.payment_id else "Add payment") }}
+  <div class="dlg-body">
+    {{ err_summary(errors) }}
+    <p class="note">Records money that one member gave to another member. Splitwise never moves money itself.</p>
+    <div class="two">
+      {{ select_field("sender_id", "Sender", options, view.values.sender_id, errors.get("sender_id", "")) }}
+      {{ select_field("receiver_id", "Receiver", options, view.values.receiver_id, errors.get("receiver_id", "")) }}
+    </div>
+    <div class="two">
+      {{ money_field("amount", "Amount", group.currency|symbol, view.values.amount, errors.get("amount", ""), 0|amount(group.currency)) }}
+      {% call field("payment_date", "Payment date", errors.get("payment_date", "")) %}
+      <input class="input" type="date" id="f-payment_date" name="payment_date" value="{{ view.values.payment_date }}" max="{{ view.today }}"{% if errors.get("payment_date") %} aria-invalid="true"{% endif %} aria-describedby="f-payment_date-err">
+      {% endcall %}
+    </div>
+    {% call field("note", 'Note <span class="subtle">(optional)</span>'|safe, errors.get("note", "")) %}
+    <input class="input" id="f-note" name="note" value="{{ view.values.note }}" maxlength="{{ NOTE_MAX }}" autocomplete="off" placeholder="e.g. Bank transfer"{% if errors.get("note") %} aria-invalid="true"{% endif %} aria-describedby="f-note-err">
+    {% endcall %}
+  </div>
+  <footer class="dlg-foot od-row">
+    {% if view.payment_id %}
+    {{ button("Delete", "danger", attrs={"hx-post": base ~ "/" ~ view.payment_id ~ "/delete", "hx-target": "this", "hx-swap": "none", "data-confirm-title": "Delete this payment?", "data-confirm-body": view.confirm_body, "data-confirm-ok": "Delete payment"}) }}
+    {% endif %}
+    <span class="grow"></span>
+    {{ button("Cancel", "secondary", attrs={"data-close": ""}) }}
+    {{ button("Save payment", "primary", type="submit") }}
+  </footer>
+</form>

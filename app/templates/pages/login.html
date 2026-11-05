@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% set shell = "bare" %}
+{% set public = true %}
+{% block title %}Sign in{% endblock %}
+{% block main_class %}login{% endblock %}
+{% block main %}{% include "partials/users/login_form.html" %}{% endblock %}

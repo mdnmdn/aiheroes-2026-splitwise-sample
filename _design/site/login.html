@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign in — Splitwise</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/splitwise.css">
 <script src="assets/splitwise.js"></script>
 <script src="assets/splitwise-app.js"></script>
@@ -15,11 +16,11 @@ window.addEventListener('DOMContentLoaded', function () { if (!window.Splitwise 
 <!-- Page: sign in. Components: Login card, Field, Select, Button (storybook → Patterns). -->
 <main class="login" id="main" aria-labelledby="loginTitle">
   <form class="login-card card" id="loginForm" novalidate>
-    <div class="od-row" style="justify-content:space-between">
+    <div class="od-row login-head">
       <div class="brand od-row"><span class="brand-mark"><span data-icon="logo"></span></span><span>Splitwise</span></div>
       <div id="appearance"></div>
     </div>
-    <div class="od-stack" style="--od-gap:4px">
+    <div class="od-stack login-intro">
       <h1 id="loginTitle">Sign in</h1>
       <p class="muted">Choose your name, or add yourself as a new user.</p>
     </div>

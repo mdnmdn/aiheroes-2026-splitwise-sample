@@ -1,0 +1,9 @@
+{% from "components/icons.html" import icon %}
+{# kind: primary, secondary, ghost, danger. size: "", sm, block. #}
+{% macro button(label, kind="primary", size="", icon_name="", type="button", attrs={}) %}
+<button class="btn {{ kind }}{% if size %} {{ size }}{% endif %}" type="{{ type }}"{% for k, v in attrs.items() %} {{ k }}="{{ v }}"{% endfor %}>{% if icon_name %}{{ icon(icon_name) }}{% endif %}{{ label }}</button>
+{% endmacro %}
+
+{% macro icon_button(icon_name, label, attrs={}) %}
+<button class="icon-btn" type="button" aria-label="{{ label }}"{% for k, v in attrs.items() %} {{ k }}="{{ v }}"{% endfor %}>{{ icon(icon_name) }}</button>
+{% endmacro %}

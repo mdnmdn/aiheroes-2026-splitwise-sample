@@ -42,10 +42,22 @@ DOC_EXCLUDE_DIRS = ("inbox",)
 
 REQUIRED_FIELDS = ("id", "title", "kind", "status", "summary", "read_when", "updated", "verified")
 ALLOWED_STATUS = ("current", "draft", "superseded")
-KIND_FOLDER = {"product": "product", "feature": "features", "tech": "tech", "infra": "infra",
-               "meta": "_meta", "wip": "wip"}
-KIND_PREFIX = {"product": "prod-", "feature": "feat-", "tech": "tech-", "infra": "infra-",
-               "meta": "meta-", "wip": "wip-"}
+KIND_FOLDER = {
+    "product": "product",
+    "feature": "features",
+    "tech": "tech",
+    "infra": "infra",
+    "meta": "_meta",
+    "wip": "wip",
+}
+KIND_PREFIX = {
+    "product": "prod-",
+    "feature": "feat-",
+    "tech": "tech-",
+    "infra": "infra-",
+    "meta": "meta-",
+    "wip": "wip-",
+}
 # Root documents: id -> kind. They sit in `_docs/` itself, outside the kind folders.
 ROOT_EXCEPTIONS = {"index": "meta", "backlog": "product"}
 
@@ -178,7 +190,11 @@ def split_frontmatter(lines: list[str]) -> tuple[dict, int, str | None]:
             try:
                 meta = yaml.safe_load("\n".join(lines[1:i])) or {}
             except (yaml.YAMLError, ValueError) as exc:
-                return {}, i + 1, f"frontmatter YAML does not parse: {exc}. Fix the syntax or the date."
+                return (
+                    {},
+                    i + 1,
+                    f"frontmatter YAML does not parse: {exc}. Fix the syntax or the date.",
+                )
             if not isinstance(meta, dict):
                 return {}, i + 1, "frontmatter is not a mapping"
             return meta, i + 1, None
@@ -237,8 +253,19 @@ def load_doc(path: Path) -> Doc:
             symbol = SYMBOL_SPAN_RE.match(span)
             if symbol:
                 symbol_spans.append((lineno, symbol.group(1)))
-    return Doc(path, path.relative_to(REPO).as_posix(), meta, lines, prose, fences, headings,
-               links, file_spans, symbol_spans, meta_error)
+    return Doc(
+        path,
+        path.relative_to(REPO).as_posix(),
+        meta,
+        lines,
+        prose,
+        fences,
+        headings,
+        links,
+        file_spans,
+        symbol_spans,
+        meta_error,
+    )
 
 
 def load_docs() -> list[Doc]:
@@ -255,7 +282,8 @@ def walk_files(root: Path) -> list[Path]:
     if not root.exists():
         return []
     return sorted(
-        p for p in root.rglob("*")
+        p
+        for p in root.rglob("*")
         if not any(d in IGNORED_DIRS for d in p.relative_to(root).parts) and p.is_file()
     )
 
@@ -300,7 +328,9 @@ def resolve_doc_reference(ref: str) -> bool:
 
 def git(*args: str) -> str:
     try:
-        result = subprocess.run(["git", *args], cwd=REPO, capture_output=True, text=True, check=False)
+        result = subprocess.run(
+            ["git", *args], cwd=REPO, capture_output=True, text=True, check=False
+        )
     except OSError:
         return ""
     return result.stdout.strip() if result.returncode == 0 else ""
@@ -395,7 +425,11 @@ def check_frontmatter_fields(doc: Doc, report: LintReport) -> None:
             report.add("L1", doc.rel, f"frontmatter has no `{key}`: the field is required. Add it.")
     status = doc.meta.get("status")
     if status and status not in ALLOWED_STATUS:
-        report.add("L1", doc.rel, f"`status: {status}` is not valid: use one of {', '.join(ALLOWED_STATUS)}.")
+        report.add(
+            "L1",
+            doc.rel,
+            f"`status: {status}` is not valid: use one of {', '.join(ALLOWED_STATUS)}.",
+        )
     for key in ("updated", "verified"):
         value = doc.meta.get(key)
         if value in (None, ""):
@@ -408,17 +442,29 @@ def check_frontmatter_fields(doc: Doc, report: LintReport) -> None:
             report.add("L1", doc.rel, f"`{key}: {value}` is not an ISO date: use YYYY-MM-DD.")
     kind = doc.meta.get("kind")
     if kind and kind not in KIND_FOLDER:
-        report.add("L1", doc.rel, f"`kind: {kind}` is not valid: use one of {', '.join(KIND_FOLDER)}.")
+        report.add(
+            "L1", doc.rel, f"`kind: {kind}` is not valid: use one of {', '.join(KIND_FOLDER)}."
+        )
     elif kind:
         expected = KIND_FOLDER[kind]
-        is_root_exception = doc.id in ROOT_EXCEPTIONS and not doc.folder and ROOT_EXCEPTIONS[doc.id] == kind
+        is_root_exception = (
+            doc.id in ROOT_EXCEPTIONS and not doc.folder and ROOT_EXCEPTIONS[doc.id] == kind
+        )
         if doc.folder != expected and not is_root_exception:
-            report.add("L1", doc.rel, f"`kind: {kind}` does not match the folder `{doc.folder or '_docs'}`: "
-                       f"move the file to `{expected}/` or fix `kind`.")
+            report.add(
+                "L1",
+                doc.rel,
+                f"`kind: {kind}` does not match the folder `{doc.folder or '_docs'}`: "
+                f"move the file to `{expected}/` or fix `kind`.",
+            )
         prefix = KIND_PREFIX[kind]
         if doc.id and not doc.id.startswith(prefix) and doc.id not in ROOT_EXCEPTIONS:
-            report.add("L1", doc.rel, f"`id: {doc.id}` does not start with `{prefix}`: "
-                       f"the prefix must match `kind: {kind}`. Rename the id.")
+            report.add(
+                "L1",
+                doc.rel,
+                f"`id: {doc.id}` does not start with `{prefix}`: "
+                f"the prefix must match `kind: {kind}`. Rename the id.",
+            )
 
 
 def check_cycles(docs: list[Doc], report: LintReport) -> None:
@@ -433,12 +479,15 @@ def check_cycles(docs: list[Doc], report: LintReport) -> None:
             if dep not in by_id:
                 continue
             if state.get(dep) == 1:
-                cycle = path[path.index(dep):]
+                cycle = path[path.index(dep) :]
                 key = frozenset(cycle)
                 if key not in reported:
                     reported.add(key)
-                    report.add("L1", by_id[dep].rel,
-                               f"`depends_on` cycle: {' -> '.join(cycle + [dep])}. Remove one edge.")
+                    report.add(
+                        "L1",
+                        by_id[dep].rel,
+                        f"`depends_on` cycle: {' -> '.join(cycle + [dep])}. Remove one edge.",
+                    )
             elif dep not in state:
                 visit(dep, path)
         path.pop()
@@ -464,7 +513,9 @@ def heading_slugs(path: Path) -> set[str]:
             match = HEADING_RE.match(raw)
             if not match:
                 continue
-            text = re.sub(r"[`*_]", "", re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", match.group(2).strip()))
+            text = re.sub(
+                r"[`*_]", "", re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", match.group(2).strip())
+            )
             slug = re.sub(r"[^\w\- ]", "", text.lower()).replace(" ", "-")
             n = counts.get(slug, 0)
             counts[slug] = n + 1
@@ -512,8 +563,13 @@ def check_l2(docs: list[Doc], report: LintReport) -> None:
             if not dest.exists():
                 report.add("L2", doc.rel, f"link target does not resolve: `{target}`", lineno)
             elif fragment and dest.suffix == ".md" and fragment.lower() not in heading_slugs(dest):
-                report.add("L2", doc.rel, f"link anchor not found in {dest.name}: `{target}`. "
-                           "Fix the anchor.", lineno, severity="warn")
+                report.add(
+                    "L2",
+                    doc.rel,
+                    f"link anchor not found in {dest.name}: `{target}`. Fix the anchor.",
+                    lineno,
+                    severity="warn",
+                )
 
 
 def check_l4(docs: list[Doc], report: LintReport) -> None:
@@ -524,20 +580,35 @@ def check_l4(docs: list[Doc], report: LintReport) -> None:
         if total > LENGTH_CEILING:
             report.add("L4", doc.rel, f"{total} lines, over the {LENGTH_CEILING}-line ceiling")
         elif total > LENGTH_TARGET[1]:
-            report.add("L4", doc.rel, f"{total} lines, over the {LENGTH_TARGET[1]}-line target",
-                       severity="warn")
+            report.add(
+                "L4",
+                doc.rel,
+                f"{total} lines, over the {LENGTH_TARGET[1]}-line target",
+                severity="warn",
+            )
         if total < LENGTH_FLOOR_WARN:
-            report.add("L4", doc.rel, f"{total} lines, under {LENGTH_FLOOR_WARN}: fold it into its parent?",
-                       severity="warn")
+            report.add(
+                "L4",
+                doc.rel,
+                f"{total} lines, under {LENGTH_FLOOR_WARN}: fold it into its parent?",
+                severity="warn",
+            )
         if total and doc.fence_lines / total > FENCE_DENSITY_MAX:
-            report.add("L4", doc.rel,
-                       f"fenced code is {100 * doc.fence_lines / total:.0f}% of the document "
-                       f"({doc.fence_lines}/{total} lines), over {FENCE_DENSITY_MAX:.0%}")
+            report.add(
+                "L4",
+                doc.rel,
+                f"fenced code is {100 * doc.fence_lines / total:.0f}% of the document "
+                f"({doc.fence_lines}/{total} lines), over {FENCE_DENSITY_MAX:.0%}",
+            )
         for fence in doc.fences:
             if fence.lines > FENCE_LINES_MAX:
                 label = f" ({fence.info})" if fence.info else ""
-                report.add("L4", doc.rel, f"fence{label} is {fence.lines} lines, over {FENCE_LINES_MAX}",
-                           fence.start)
+                report.add(
+                    "L4",
+                    doc.rel,
+                    f"fence{label} is {fence.lines} lines, over {FENCE_LINES_MAX}",
+                    fence.start,
+                )
 
 
 _BANNED = [
@@ -557,9 +628,14 @@ def check_l5(docs: list[Doc], report: LintReport) -> None:
                 if not match:
                     continue
                 s, e = match.span()
-                marked = (escape(raw[:s].strip()) + f" [bold red]{escape(raw[s:e])}[/bold red] "
-                          + escape(raw[e:].strip()))
-                report.add("L5", doc.rel, f'banned phrasing "{phrase}"', lineno, markup=marked.strip())
+                marked = (
+                    escape(raw[:s].strip())
+                    + f" [bold red]{escape(raw[s:e])}[/bold red] "
+                    + escape(raw[e:].strip())
+                )
+                report.add(
+                    "L5", doc.rel, f'banned phrasing "{phrase}"', lineno, markup=marked.strip()
+                )
 
 
 def check_todo(docs: list[Doc], report: LintReport) -> None:
@@ -570,12 +646,22 @@ def check_todo(docs: list[Doc], report: LintReport) -> None:
         for lineno, raw in doc.prose:
             text = CODE_SPAN_RE.sub(lambda m: " " * len(m.group(0)), raw)
             if re.search(r"\bTODO\b", text):
-                report.add("L5", doc.rel, "`TODO` in a document that is not a draft: "
-                           "finish it or set `status: draft`.", lineno, severity="warn")
+                report.add(
+                    "L5",
+                    doc.rel,
+                    "`TODO` in a document that is not a draft: finish it or set `status: draft`.",
+                    lineno,
+                    severity="warn",
+                )
         for key, value in doc.meta.items():
             if re.search(r"\bTODO\b", str(value)):
-                report.add("L5", doc.rel, f"`TODO` in frontmatter field `{key}` of a document that is "
-                           "not a draft: finish it or set `status: draft`.", severity="warn")
+                report.add(
+                    "L5",
+                    doc.rel,
+                    f"`TODO` in frontmatter field `{key}` of a document that is "
+                    "not a draft: finish it or set `status: draft`.",
+                    severity="warn",
+                )
 
 
 def check_l7(docs: list[Doc], report: LintReport, all_docs: list[Doc]) -> None:
@@ -599,8 +685,9 @@ def check_l7(docs: list[Doc], report: LintReport, all_docs: list[Doc]) -> None:
                 report.add("L7", doc.rel, f"`wip/` document last updated {age} days ago")
     for path in walk_files(DOCS / "inbox"):
         if path.name != ".gitkeep" and (age := file_age_days(path)) > INBOX_STALE_DAYS:
-            report.add("L7", path.relative_to(REPO).as_posix(),
-                       f"`inbox/` file is {age} days old: file it")
+            report.add(
+                "L7", path.relative_to(REPO).as_posix(), f"`inbox/` file is {age} days old: file it"
+            )
 
 
 def check_l9(docs: list[Doc], report: LintReport) -> None:
@@ -613,7 +700,9 @@ def check_l9(docs: list[Doc], report: LintReport) -> None:
             counts[key] = counts.get(key, 0) + 1
         for target, count in sorted(counts.items()):
             if count > MAX_LINK_REPEATS:
-                report.add("L9", doc.rel, f"link `{target}` appears {count} times (max {MAX_LINK_REPEATS})")
+                report.add(
+                    "L9", doc.rel, f"link `{target}` appears {count} times (max {MAX_LINK_REPEATS})"
+                )
 
 
 def check_l10(report: LintReport) -> None:
@@ -635,38 +724,53 @@ def stale_docs(docs: list[Doc], tolerance: int) -> list[tuple[Doc, date, date]]:
 
 def check_l11(docs: list[Doc], report: LintReport) -> None:
     for doc, updated, filed in stale_docs(docs, FRESHNESS_TOLERANCE_DAYS):
-        report.add("L11", doc.rel, f"file dated {filed}, `updated` is {updated}: stamp or re-read",
-                   severity="warn")
+        report.add(
+            "L11",
+            doc.rel,
+            f"file dated {filed}, `updated` is {updated}: stamp or re-read",
+            severity="warn",
+        )
 
 
 def run_lint(paths: list[str], as_json: bool) -> int:
     missing = [p for p in paths if not (Path.cwd() / p).exists()]
     if missing:
-        console.print(f"[red]path does not exist: {escape(', '.join(missing))}[/red]. "
-                      "Give the path of a document in `_docs/`.")
+        console.print(
+            f"[red]path does not exist: {escape(', '.join(missing))}[/red]. "
+            "Give the path of a document in `_docs/`."
+        )
         return 2
     docs = load_docs()
     if not docs:
-        console.print(f"[red]lint scanned 0 documents[/red]: no `.md` file found under {escape(str(DOCS))}. "
-                      "Check the repository path.")
+        console.print(
+            f"[red]lint scanned 0 documents[/red]: no `.md` file found under {escape(str(DOCS))}. "
+            "Check the repository path."
+        )
         return 1
     report = LintReport()
     check_l10(report)
     check_l1(docs, report)
     selected = select_docs(docs, paths)
     if paths and not selected:
-        console.print("[red]no document matched the given paths[/red]: the paths are not documents "
-                      "of the library. Give a `.md` file in `_docs/`.")
+        console.print(
+            "[red]no document matched the given paths[/red]: the paths are not documents "
+            "of the library. Give a `.md` file in `_docs/`."
+        )
         return 2
     for check in (check_l2, check_l4, check_l5, check_todo, check_l9, check_l11):
         check(selected, report)
     check_l7(selected, report, docs)
 
     if as_json:
-        print(json.dumps({
-            "failures": len(report.failures),
-            "findings": [vars(f) | {"markup": None} for f in report.findings],
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "failures": len(report.failures),
+                    "findings": [vars(f) | {"markup": None} for f in report.findings],
+                },
+                indent=2,
+            )
+        )
         return 1 if report.failures else 0
 
     l10 = [f for f in report.findings if f.check == "L10"]
@@ -687,7 +791,9 @@ def run_lint(paths: list[str], as_json: bool) -> int:
         for f in sorted(by_doc[doc], key=lambda f: (int(f.check[1:]), f.line or 0)):
             colour = "red" if f.severity == "fail" else "yellow"
             where = f":{f.line}" if f.line else ""
-            console.print(f"  [{colour}]{f.check}[/{colour}] {escape(doc)}{where}: {escape(f.message)}")
+            console.print(
+                f"  [{colour}]{f.check}[/{colour}] {escape(doc)}{where}: {escape(f.message)}"
+            )
             if f.markup:
                 console.print(f"        {f.markup}", highlight=False)
         console.print()
@@ -701,7 +807,9 @@ def run_lint(paths: list[str], as_json: bool) -> int:
     for check in sorted(counts, key=lambda c: int(c[1:])):
         table.add_row(check, str(counts[check][0]), str(counts[check][1]))
     table.add_section()
-    table.add_row("total", str(sum(c[0] for c in counts.values())), str(sum(c[1] for c in counts.values())))
+    table.add_row(
+        "total", str(sum(c[0] for c in counts.values())), str(sum(c[1] for c in counts.values()))
+    )
     console.print(table)
     console.print(f"{len(docs)} documents scanned")
     return 1 if report.failures else 0
@@ -731,7 +839,7 @@ def replace_marker(text: str, name: str, body: str) -> str | None:
     span = read_marker(text, name)
     if span is None:
         return None
-    return text[: span[0]] + "\n\n" + body.strip() + "\n\n" + text[span[1]:]
+    return text[: span[0]] + "\n\n" + body.strip() + "\n\n" + text[span[1] :]
 
 
 def doc_group(doc: Doc) -> str:
@@ -755,8 +863,10 @@ def render_catalogue(docs: list[Doc]) -> str:
         for doc in sorted(group, key=lambda d: d.rel):
             summary = str(doc.meta.get("summary") or "").strip().replace("\n", " ") or "-"
             verified = as_date(doc.meta.get("verified"))
-            out.append(f"| [{doc.title}]({link_from(HOME, doc.path)}) | {summary} | "
-                       f"{verified.isoformat() if verified else '-'} |")
+            out.append(
+                f"| [{doc.title}]({link_from(HOME, doc.path)}) | {summary} | "
+                f"{verified.isoformat() if verified else '-'} |"
+            )
         out.append("")
     return "\n".join(out)
 
@@ -805,12 +915,20 @@ def render_tree(existing: str) -> str:
     rows: list[tuple[str, str]] = []
 
     def walk(parent: str, prefix: str) -> None:
-        entries = sorted(children.get(parent, []),
-                         key=lambda e: (order.get(e[0], len(order)), not e[1], e[0]))
+        entries = sorted(
+            children.get(parent, []), key=lambda e: (order.get(e[0], len(order)), not e[1], e[0])
+        )
         for i, (rel, is_dir) in enumerate(entries):
             last = i == len(entries) - 1
-            rows.append((prefix + ("└── " if last else "├── ") + Path(rel).name + ("/" if is_dir else ""),
-                         notes.get(rel, "")))
+            rows.append(
+                (
+                    prefix
+                    + ("└── " if last else "├── ")
+                    + Path(rel).name
+                    + ("/" if is_dir else ""),
+                    notes.get(rel, ""),
+                )
+            )
             if is_dir:
                 walk(rel, prefix + ("    " if last else "│   "))
 
@@ -821,7 +939,9 @@ def render_tree(existing: str) -> str:
             rows.append((f"{root}/", notes.get(root, "")))
             walk(root, "")
     width = max((len(label) for label, note in rows if note), default=0) + 2
-    body = ["```"] + [f"{label.ljust(width)}{note}".rstrip() if note else label for label, note in rows]
+    body = ["```"] + [
+        f"{label.ljust(width)}{note}".rstrip() if note else label for label, note in rows
+    ]
     return "\n".join(body + ["```"])
 
 
@@ -834,7 +954,7 @@ def run_index(check_only: bool) -> int:
     if SOURCE_ROOTS and code_map.exists():
         current = code_map.read_text(encoding="utf-8")
         span = read_marker(current, "tree")
-        plan.append((code_map, "tree", render_tree(current[span[0]: span[1]] if span else "")))
+        plan.append((code_map, "tree", render_tree(current[span[0] : span[1]] if span else "")))
     if not plan:
         console.print("[yellow]nothing to generate[/yellow]: no Home.md, no code map")
         return 0
@@ -855,8 +975,10 @@ def run_index(check_only: bool) -> int:
             console.print(f"[green]unchanged[/green] {rel}")
             continue
         changed = True
-        console.print(f"[cyan]{'would rewrite' if check_only else 'rewrote'}[/cyan] {rel} "
-                      f"({len(text.splitlines())} -> {len(updated.splitlines())} lines)")
+        console.print(
+            f"[cyan]{'would rewrite' if check_only else 'rewrote'}[/cyan] {rel} "
+            f"({len(text.splitlines())} -> {len(updated.splitlines())} lines)"
+        )
         if not check_only:
             path.write_text(updated, encoding="utf-8")
     if check_only and changed:
@@ -892,22 +1014,35 @@ def run_new(kind: str, slug: str) -> int:
     today = date.today().isoformat()
     title = slug.replace("-", " ").capitalize()
     front = [
-        "---", f"id: {prefix}-{slug}", f"title: {title}", f"kind: {kind}", "status: draft",
+        "---",
+        f"id: {prefix}-{slug}",
+        f"title: {title}",
+        f"kind: {kind}",
+        "status: draft",
         "summary: TODO one line, the catalogue entry in Home.md",
         "read_when: TODO the task, not the subject",
-        f"updated: {today}", f"verified: {today}",
+        f"updated: {today}",
+        f"verified: {today}",
     ]
     if kind in ("tech", "infra", "feature"):
         front.append("source_anchors: []")
-    front += ["depends_on: [prod-overview]" if kind != "product" else "depends_on: []",
-              "review_cycle: quarterly", "---", "", f"# {title}", ""]
+    front += [
+        "depends_on: [prod-overview]" if kind != "product" else "depends_on: []",
+        "review_cycle: quarterly",
+        "---",
+        "",
+        f"# {title}",
+        "",
+    ]
     for section in sections:
         front += [f"## {section}", "", "TODO", ""]
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(front), encoding="utf-8")
     console.print(f"[green]created[/green] {path.relative_to(REPO)}")
-    console.print("Still to do by hand: set `status: current`, add the document to the reading paths "
-                  "in `_docs/Home.md`, then run `mise run docs-index`.")
+    console.print(
+        "Still to do by hand: set `status: current`, add the document to the reading paths "
+        "in `_docs/Home.md`, then run `mise run docs-index`."
+    )
     return 0
 
 
@@ -934,7 +1069,9 @@ def set_frontmatter_line(path: Path, key: str, value: str) -> bool:
 
 def run_changed(days: int) -> int:
     rows = stale_docs(load_docs(), days)
-    table = Table(title=f"L11: file date outruns `updated` by more than {days} days", title_justify="left")
+    table = Table(
+        title=f"L11: file date outruns `updated` by more than {days} days", title_justify="left"
+    )
     for col in ("Document", "updated", "File dated"):
         table.add_column(col)
     for doc, updated, filed in sorted(rows, key=lambda r: r[2]):
@@ -951,7 +1088,9 @@ def run_stamp(dry: bool, snapshot: list[tuple[Doc, date, date]] | None = None) -
             verb = "[red]could not stamp[/red]"
         console.print(f"{verb} {doc.rel}: updated {updated} -> {filed}")
         if filed > (as_date(doc.meta.get("verified")) or date.min):
-            console.print("  [yellow]updated is ahead of verified: read it, then `docs-verify`[/yellow]")
+            console.print(
+                "  [yellow]updated is ahead of verified: read it, then `docs-verify`[/yellow]"
+            )
     if not rows:
         console.print("[green]nothing to stamp[/green]")
     return 0
@@ -1014,9 +1153,16 @@ def run_drift() -> int:
     for col in ("Document", "Verified", "Anchored files that moved after it"):
         table.add_column(col)
     for doc, verified, moved in rows:
-        table.add_row(doc.rel, verified.isoformat() if verified else "-",
-                      "\n".join(f"{a} ({d.isoformat()})" for a, d in moved))
-    console.print(table if rows else "[green]no anchored file has moved since its document was verified[/green]")
+        table.add_row(
+            doc.rel,
+            verified.isoformat() if verified else "-",
+            "\n".join(f"{a} ({d.isoformat()})" for a, d in moved),
+        )
+    console.print(
+        table
+        if rows
+        else "[green]no anchored file has moved since its document was verified[/green]"
+    )
     console.print("[yellow]This detects the possibility of drift only.[/yellow]")
     console.print(f"{len(rows)} of {len(docs)} anchored documents queued")
     return 0
@@ -1058,7 +1204,9 @@ def run_touched(paths: list[str]) -> int:
             unanchored.append(rel)
     if table.row_count:
         console.print(table)
-        console.print("Verify each of these in the same change, then `mise run docs-verify <paths>`.")
+        console.print(
+            "Verify each of these in the same change, then `mise run docs-verify <paths>`."
+        )
     if unanchored:
         console.print("\n[yellow]Anchored by no document[/yellow]:")
         for rel in unanchored:
@@ -1079,7 +1227,9 @@ def run_stats() -> int:
     for d in docs:
         by_folder.setdefault(d.folder or "(root)", []).append(d)
     for folder in sorted(by_folder):
-        table.add_row(folder, str(len(by_folder[folder])), str(sum(d.total_lines for d in by_folder[folder])))
+        table.add_row(
+            folder, str(len(by_folder[folder])), str(sum(d.total_lines for d in by_folder[folder]))
+        )
     console.print(table)
 
     status: dict[str, int] = {}
@@ -1094,9 +1244,13 @@ def run_stats() -> int:
         f"over ceiling {sum(d.total_lines > LENGTH_CEILING for d in docs)}"
     )
     bearing = [d for d in docs if d.folder in ("tech", "infra", "features")]
-    console.print(f"no source_anchors: {sum(not d.anchors for d in bearing)} of {len(bearing)} "
-                  "tech, infra and feature documents")
-    verified = [(as_date(d.meta.get("verified")), d) for d in docs if as_date(d.meta.get("verified"))]
+    console.print(
+        f"no source_anchors: {sum(not d.anchors for d in bearing)} of {len(bearing)} "
+        "tech, infra and feature documents"
+    )
+    verified = [
+        (as_date(d.meta.get("verified")), d) for d in docs if as_date(d.meta.get("verified"))
+    ]
     if verified:
         oldest, doc = min(verified, key=lambda v: v[0])
         console.print(f"oldest verification: {oldest} ({doc.rel})")
@@ -1149,7 +1303,9 @@ def run_log(scope: str, checks: str, counts: str, notes: str) -> int:
     lines = REVIEW_LOG.read_text(encoding="utf-8").split("\n")
     table_rows = [i for i, line in enumerate(lines) if line.startswith("|")]
     if not table_rows:
-        console.print("[red]review-log.md has no table[/red]: the log row has no place. Restore the table.")
+        console.print(
+            "[red]review-log.md has no table[/red]: the log row has no place. Restore the table."
+        )
         return 1
     lines.insert(table_rows[-1] + 1, row)
     REVIEW_LOG.write_text("\n".join(lines), encoding="utf-8")
@@ -1172,7 +1328,9 @@ def run_graph() -> int:
     console.print("[bold]depends_on graph[/bold]\n")
 
     def render(node: str, depth: int, seen: tuple[str, ...]) -> None:
-        console.print("  " * depth + ("└─ " if depth else "") + f"{node} [dim]{escape(by_id[node].rel)}[/dim]")
+        console.print(
+            "  " * depth + ("└─ " if depth else "") + f"{node} [dim]{escape(by_id[node].rel)}[/dim]"
+        )
         if node in seen:
             console.print("  " * (depth + 1) + "[red]... cycle[/red]")
             return
@@ -1189,7 +1347,9 @@ def run_graph() -> int:
         for node in isolated:
             console.print(f"  {node} [dim]{escape(by_id[node].rel)}[/dim]")
     if hubs:
-        console.print(f"\n[yellow]Over-connected[/yellow]: more than {MAX_INBOUND_EDGES} inbound edges:")
+        console.print(
+            f"\n[yellow]Over-connected[/yellow]: more than {MAX_INBOUND_EDGES} inbound edges:"
+        )
         for node, count in sorted(hubs, key=lambda h: -h[1]):
             console.print(f"  {node}: {count} inbound")
     if not isolated and not hubs:
@@ -1199,14 +1359,32 @@ def run_graph() -> int:
 
 # ----------------------------------------------------------------------- cli
 
-ACTIONS = ["lint", "index", "index-check", "new", "touched", "stats", "changed", "drift", "review",
-           "stamp", "stamp-check", "verify", "log", "inbox", "graph", "sync"]
+ACTIONS = [
+    "lint",
+    "index",
+    "index-check",
+    "new",
+    "touched",
+    "stats",
+    "changed",
+    "drift",
+    "review",
+    "stamp",
+    "stamp-check",
+    "verify",
+    "log",
+    "inbox",
+    "graph",
+    "sync",
+]
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=ACTIONS)
-    parser.add_argument("args", nargs="*", help="paths, `<kind> <slug>` for new, or days for changed")
+    parser.add_argument(
+        "args", nargs="*", help="paths, `<kind> <slug>` for new, or days for changed"
+    )
     parser.add_argument("--json", action="store_true", help="lint: machine-readable output")
     parser.add_argument("--scope", default="", help="log: what the pass covered")
     parser.add_argument("--checks", default="", help="log: checks run")

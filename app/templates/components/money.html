@@ -1,0 +1,9 @@
+{# A signed balance over its label. Colour is never the only cue. The sign picks the class. #}
+{% macro balance_amount(minor, currency) %}
+<span class="amt od-stat od-fixed"><span class="num od-nowrap {{ 'pos' if minor > 0 else 'neg' if minor < 0 else 'muted' }}">{{ minor|signed_money(currency) }}</span><span class="amt-label">{{ minor|balance_label }}</span></span>
+{% endmacro %}
+
+{# One figure of the stats strip, in a .stats.od-grid. #}
+{% macro stat(value, caption) %}
+<div class="od-stat"><span class="stat-num num od-nowrap">{{ value }}</span><span class="stat-cap">{{ caption }}</span></div>
+{% endmacro %}

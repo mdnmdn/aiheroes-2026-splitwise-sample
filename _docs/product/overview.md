@@ -58,7 +58,7 @@ The MVP lets one group record equal-split expenses in a single currency. The use
 ### User stories
 
 1. As a user, I create a group with a name and a base currency, so I can start tracking.
-2. As a user, I add, rename and remove members, so the group matches reality.
+2. As a user, I add and remove members, so the group matches reality.
 3. As a user, I add an expense with description, amount, expense date, payer and participants (default: every member), so the app records the expense.
 4. As a user, I edit or delete an expense, so I can fix mistakes.
 5. As a user, I see the balance of each member, so I know who owes money and who is owed money.
@@ -72,7 +72,7 @@ The MVP lets one group record equal-split expenses in a single currency. The use
 | --- | --- |
 | MVP-01 | A group has a name (1–50 characters) and a base currency. The app stores the base currency as an ISO 4217 currency code. |
 | MVP-02 | A member name is unique within a group (case-insensitive) and has 1–30 characters. |
-| MVP-03 | The app never removes a member who has an expense or a payment. The user can rename that member. |
+| MVP-03 | The app never removes a member who has an expense or a payment. |
 | MVP-04 | An expense requires a description (1–100 characters), an amount > 0, an expense date, one payer and at least one participant. |
 | MVP-05 | An expense date or payment date can be in the past. The app rejects a date in the future. |
 | MVP-06 | A payment requires a sender, a receiver (different members), an amount > 0 and a payment date. |

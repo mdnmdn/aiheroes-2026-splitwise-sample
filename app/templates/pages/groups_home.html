@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "components/buttons.html" import button, icon_button %}
+{% from "components/feedback.html" import empty_state %}
+{% from "components/forms.html" import segmented %}
+{% block title %}Your groups{% endblock %}
+{% block main %}
+<section class="card home-card" aria-labelledby="homeTitle">
+  <div class="od-stack" style="--od-gap:4px">
+    <h1 id="homeTitle">Your groups</h1>
+    {% if groups.total %}<p class="muted">Open a group to see balances and transactions.</p>{% endif %}
+  </div>
+  {% if groups.total %}
+  <div class="od-stack" style="--od-gap:var(--s3)">
+    <form class="od-stack" style="--od-gap:var(--s3)" id="groupFilters" action="/" hx-get="/groups/list" hx-trigger="input changed delay:250ms from:#groupSearch, change from:#groupFilter, submit" hx-target="#group-list-region" hx-swap="outerHTML" hx-push-url="false">
+      <div class="od-row">
+        <label for="groupSearch" class="sr-only">Search groups</label>
+        <input class="input od-fill" type="search" id="groupSearch" name="q" placeholder="Search groups" autocomplete="off" aria-controls="group-list-region">
+        <button type="button" class="icon-btn outline od-fixed" hx-get="/groups/new" hx-target="#dialog-host" hx-swap="innerHTML" hx-push-url="false" aria-label="Create a new group"><span data-icon="plus"></span></button>
+      </div>
+      {{ segmented("filter", [("all", "All"), ("owe", "You owe"), ("owed", "You're owed")], "all", id="groupFilter") }}
+    </form>
+    {% include "partials/groups/list.html" %}
+    <p class="note" id="groupCount" role="status">{{ groups.rows|length }} of {{ groups.total }} groups</p>
+  </div>
+  {% else %}
+  {% call empty_state("You are not in any group yet", "Create a group for your trip, flat or regular tab, or join one with an invite code below.", "users") %}
+    {{ button("Create group", "primary", icon_name="plus", attrs={"hx-get": "/groups/new", "hx-target": "#dialog-host", "hx-swap": "innerHTML", "hx-push-url": "false"}) }}
+  {% endcall %}
+  {% endif %}
+</section>
+{% include "partials/groups/join_card.html" %}
+{% endblock %}

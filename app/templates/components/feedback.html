@@ -1,0 +1,23 @@
+{% from "components/icons.html" import icon %}
+{# errors: a dict from field key to message. The summary shows for two or more errors. #}
+{% macro err_summary(errors) %}
+<div class="err-summary" tabindex="-1"{% if errors|length < 2 %} hidden{% endif %}>
+  {% if errors|length >= 2 %}
+  <strong>Fix {{ errors|length }} fields to continue:</strong>
+  <ul>{% for key, text in errors.items() %}<li><a href="#" data-goto="{{ key }}">{{ text }}</a></li>{% endfor %}</ul>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{# tag: "div" for a panel, "li" inside a list. The caller can add the action button. #}
+{% macro empty_state(title, text, icon_name="", tag="div") %}
+<{{ tag }} class="empty">
+  {% if icon_name %}<span class="kind-icon"><span data-icon="{{ icon_name }}"></span></span>{% endif %}
+  <h3>{{ title }}</h3>
+  <p>{{ text }}</p>
+  {% if caller is defined %}{{ caller() }}{% endif %}
+</{{ tag }}>
+{% endmacro %}
+
+{# A text badge with a check. Colour is never the only cue. #}
+{% macro settled_badge(text) %}<span class="settled">{{ icon("check") }}{{ text }}</span>{% endmacro %}

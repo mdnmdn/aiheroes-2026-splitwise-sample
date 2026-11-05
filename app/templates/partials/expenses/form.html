@@ -1,0 +1,35 @@
+{% from "components/buttons.html" import button %}
+{% from "components/feedback.html" import err_summary %}
+{% from "components/forms.html" import field, select_field, money_field, check_tiles %}
+{% from "components/overlays.html" import dlg_head %}
+{% set group = view.group %}
+{% set errors = view.errors %}
+{% set base = "/groups/" ~ group.id ~ "/expenses" %}
+{% set options = [] %}
+{% for m in view.members %}{% set _ = options.append((m.id, m.name)) %}{% endfor %}
+{% set url = base ~ ("/" ~ view.expense_id if view.expense_id else "") %}
+<form class="dlg" id="expenseForm" method="post" action="{{ url }}" hx-post="{{ url }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]" novalidate>
+  {{ dlg_head("expTitle", "Edit expense" if view.expense_id else "Add expense") }}
+  <div class="dlg-body">
+    {{ err_summary(errors) }}
+    {% call field("description", "Description", errors.get("description", "")) %}
+    <input class="input" id="f-description" name="description" value="{{ view.values.description }}" maxlength="{{ DESCRIPTION_MAX }}" autocomplete="off" placeholder="e.g. Groceries at Pingo Doce"{% if errors.get("description") %} aria-invalid="true"{% endif %} aria-describedby="f-description-err" autofocus>
+    {% endcall %}
+    <div class="two">
+      {{ money_field("amount", "Amount", group.currency|symbol, view.values.amount, errors.get("amount", ""), 0|amount(group.currency)) }}
+      {% call field("expense_date", "Expense date", errors.get("expense_date", "")) %}
+      <input class="input" type="date" id="f-expense_date" name="expense_date" value="{{ view.values.expense_date }}" max="{{ view.today }}"{% if errors.get("expense_date") %} aria-invalid="true"{% endif %} aria-describedby="f-expense_date-err">
+      {% endcall %}
+    </div>
+    {{ select_field("payer_id", "Paid by", options, view.values.payer_id, errors.get("payer_id", "")) }}
+    {{ check_tiles("p", "Split equally between", view.members, view.values.p, view.preview.shares, group.currency, view.preview.hint, view.preview.all_selected, errors.get("participants", ""), attrs={"hx-get": base ~ "/preview", "hx-trigger": "change, input from:#f-amount delay:250ms", "hx-include": "closest form", "hx-swap": "none", "hx-push-url": "false"}) }}
+  </div>
+  <footer class="dlg-foot od-row">
+    {% if view.expense_id %}
+    {{ button("Delete", "danger", attrs={"hx-post": base ~ "/" ~ view.expense_id ~ "/delete", "hx-target": "this", "hx-swap": "none", "data-confirm-title": "Delete this expense?", "data-confirm-body": view.confirm_body, "data-confirm-ok": "Delete expense"}) }}
+    {% endif %}
+    <span class="grow"></span>
+    {{ button("Cancel", "secondary", attrs={"data-close": ""}) }}
+    {{ button("Save expense", "primary", type="submit") }}
+  </footer>
+</form>

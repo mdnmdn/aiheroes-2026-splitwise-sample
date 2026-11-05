@@ -19,8 +19,7 @@ agents and humans who capture product thinking. Later, it includes agents and hu
 **This document is self-sufficient.** It holds the fields, the placement rule and the cases where you
 can create a document. You do not need `librarian.md` for structure and maintenance passes.
 You need `docs-guidelines.md` only to argue with a rule. [`phases.md`](./phases.md) names
-the folders and skeletons in force. The create-tests below match the current phase, **product
-ideation**.
+the folders and skeletons in force. The create-tests below match the current phase, **development**.
 
 **Writing duty.** Every document that you write or change follows [`ste-writing.md`](./ste-writing.md).
 Use the mode that its table "Where STE applies" gives for that text. Use only the terms of
@@ -95,15 +94,15 @@ are the only one who knows it. A librarian who files it later can only guess. Th
 > business-only, with no implementation? If you delete that claim from the product, does the
 > document go too? If both answers are yes, file it under `product/`.
 
-> **Feature. Open, contract only.** Is a named capability that a member sees decided enough to have
+> **Feature. Open, full skeleton.** Is a named capability that a member sees decided enough to have
 > a contract? Ask: if you delete this capability from the product, does the document go too? If yes,
 > file it under `features/`.
 
-> **Tech. Not in this phase.** No tech stack is chosen. Do not create a `tech/` document. Write one
-> line in `backlog.md` that names the open technical question.
+> **Tech. Open.** Is it a cross-cutting model, rule or convention inside the solution? Ask: if you
+> delete one feature from the product, does the document stay? If yes, file it under `tech/`.
 
-> **Infra. Not in this phase.** No build, deploy or environment exists. Do not create an `infra/`
-> document. Write one line in `backlog.md` instead.
+> **Infra. Open.** Is it about how the system is built, run, deployed or checked? Ask: if you
+> delete one feature from the product, does the document stay? If yes, file it under `infra/`.
 
 If you are not sure, the answer is "no". Use §8 instead. Never create a folder. Never create a second
 document for a subject that has one. Extend the existing document.
@@ -112,13 +111,17 @@ Run `mise run docs-new <kind> <slug>` to scaffold the file. It writes the correc
 correct section order. Alternatively, copy the nearest sibling in the target folder and replace its
 content.
 
-A **feature** document in this phase is the contract only, in this order:
+A **feature** document in this phase uses the full skeleton, in this order:
 
 ```markdown
-## Purpose        2–4 sentences. The outcome that a member sees.
-## Behaviour      The contract: rules, invariants, edge cases, what is forbidden.
-## Assumptions    What must stay true for this capability to hold.
+## Purpose                  2–4 sentences. The outcome that a member sees.
+## Behaviour                The contract: rules, invariants, edge cases, what is forbidden.
+## Data                     The records and fields that the capability reads and writes.
+## Implementation           How the code does it. It yields to the source.
+## Failure & idempotency    What happens on an error or a repeated request.
+## Assumptions              What must stay true for this capability to hold.
 ## Related docs
+## Next steps               Optional.
 ```
 
 A **product** document is `## Purpose`, `## Scope`, `## Non-goals`, `## Related docs`. It has no

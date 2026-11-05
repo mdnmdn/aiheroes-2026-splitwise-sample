@@ -3,7 +3,7 @@ id: meta-librarian
 title: Librarian rulebook
 kind: meta
 status: current
-summary: How `_docs/` is organized, and how a bookkeeper agent keeps it that way.
+summary: How `_docs/` is organized, and how a librarian agent keeps it that way.
 read_when: you are creating, moving, splitting or deleting a document, or you run a maintenance pass
 updated: 2026-11-05
 verified: 2026-11-05
@@ -14,7 +14,7 @@ review_cycle: quarterly
 
 This is the rulebook for the documentation, not for the product. Read it before you create, move,
 split or delete anything under `_docs/`. It has two audiences. One is a human who decides where a document
-belongs. The other is a **bookkeeper agent** on a maintenance pass (§8). If a claim you distilled touched a
+belongs. The other is the **librarian agent** (`.claude/agents/librarian.md`) on a maintenance pass (§8). If a claim you distilled touched a
 document, read [`authoring.md`](./authoring.md) instead. It is the full duty of a contributor.
 
 The library serves agents that arrive with no memory of previous work. Every rule below makes one
@@ -53,7 +53,7 @@ Folders encode **kind of knowledge**. Frontmatter encodes **stability**. Never m
 | `infra/` | Build, deploy, environments, quality gates | Changing how the system is built or run |
 | `wip/` | Notes for the task in flight. Deleted when the task closes | The task in flight |
 | `inbox/` | Raw input: transcripts, dumps, pasted drafts. Preserved, never edited | Nobody yet. To be filed |
-| `_meta/` | How this library works. The underscore means "not project knowledge" | The bookkeeper |
+| `_meta/` | How this library works. The underscore means "not project knowledge" | The librarian |
 
 `tech/` and `infra/` split on the deployment boundary. A rule that constrains code inside the
 solution is `tech/`. A rule about the machinery that builds, ships or runs the solution is `infra/`.
@@ -201,7 +201,7 @@ History has three homes:
 - **git**, once it exists: what changed and when.
 - **A decision register in `tech/`**, once one is filed: why this and not the alternative. A decision
   can name what it replaced, because the rationale stays true.
-- **`_meta/review-log.md`**: what the bookkeeper did.
+- **`_meta/review-log.md`**: what the librarian did.
 
 Forward-looking content has two places: the final `## Next steps` of a document (capped, no dates, no
 promises), and `backlog.md`.
@@ -256,13 +256,13 @@ comes from one specific capture.
   reorganized. Write "see the balance rules in `product/overview.md`", not "§2.7".
 - **Cite a source by path, plus a symbol where it helps.** Never a line number (§4.3).
 
-## 8. The bookkeeper
+## 8. The librarian agent
 
 ### 8.1 Powers and limits
 
-> **The bookkeeper rewrites form and proposes substance.**
+> **The librarian rewrites form and proposes substance.**
 
-**The bookkeeper can act directly:**
+**The librarian can act directly:**
 
 - Fix frontmatter.
 - Regenerate the `Home.md` catalogue.
@@ -274,11 +274,11 @@ comes from one specific capture.
 - Delete `wip/` documents whose task closed. Keep `wip/.gitkeep`: it keeps the empty folder in git.
 - File `inbox/` items, that is, distill them into the library.
 
-**The bookkeeper never edits an inbox file.** The library preserves the inbox raw.
+**The librarian never edits an inbox file.** The library preserves the inbox raw.
 
-**The bookkeeper never stamps `verified`** on a document it did not check.
+**The librarian never stamps `verified`** on a document it did not check.
 
-**The bookkeeper proposes and does not act** on these:
+**The librarian proposes and does not act** on these:
 
 - A change to a normative rule, a product decision or a domain invariant.
 - A new rule.
@@ -293,7 +293,7 @@ record of what humans decided. When in doubt, the material is substance.
 Others prescribe and outrank it. `authoring.md` owns that rule. `phases.md` says what counts as a
 source in this phase.
 
-**The bookkeeper detects drift and does not resolve it.** It finds mechanically that an anchored
+**The librarian detects drift and does not resolve it.** It finds mechanically that an anchored
 source changed after `verified`. It cannot judge whether the document still holds. Fix a descriptive
 mismatch only when the change is unambiguous. Queue everything else for the owner of the claim. A
 `verified` stamp on a document nobody read is the worst outcome. It turns "unknown" into "confirmed".
@@ -351,7 +351,7 @@ Never make a silent pass. "Nothing to change" is a result and gets its row.
 
 **A duty that nobody is pointed at does not exist.** Most documents are updated by agents whose job
 is the product. They never open this file. They comply only if something that they already read
-tells them to, at the moment it applies. These channels are the job of the bookkeeper, and they rank above
+tells them to, at the moment it applies. These channels are the job of the librarian, and they rank above
 tidy prose.
 
 | Channel | Carries | Why it matters |
@@ -360,6 +360,7 @@ tidy prose.
 | `Home.md` | The same pointer, next to the reading paths | Read at the start of a task, by an agent that can skim the preamble |
 | `CLAUDE.md` | `@AGENTS.md` | Both tool preambles load the same rules |
 | `.claude/skills/ste-writing/` | The STE dialect as a skill | Agents that write procedures or `## Behaviour` find the dialect when they need it |
+| `.claude/agents/librarian.md` | The librarian agent: the reading order, the limits and the pass procedure of §8 | A coordinator delegates a pass to it. The pass runs in its own context |
 
 `mise run docs-touched` is an optional channel. A pre-commit hook and role files can join later, when
 they earn their keep. **L10** does not require them.
@@ -372,15 +373,15 @@ upkeep of the library breaks, and every document stays intact.
 
 ## 9. Proposing a change
 
-`_meta/feedback.md` is the channel for everything the bookkeeper cannot do itself (§8.1). It is an
+`_meta/feedback.md` is the channel for everything the librarian cannot do itself (§8.1). It is an
 append-only table: `id · date · target · kind · rationale · status`. The *kind* is one of
 `split · merge · move · rename · rule-change · gap · drift`.
 
 Three rules keep it useful to agents with no memory of previous passes:
 
 - **At most five open entries.** When the ledger is full, report the finding instead of appending.
-- **A rejection keeps its reason permanently.** The next bookkeeper does not raise it again.
-- **The bookkeeper executes an accepted proposal,** then closes it with what it did.
+- **A rejection keeps its reason permanently.** The next librarian does not raise it again.
+- **The librarian executes an accepted proposal,** then closes it with what it did.
 
 Write one sentence of rationale per entry. If it needs a paragraph, it is substance. Discuss it with a
 human.

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Error {{ status }}{% endblock %}
+{% block main %}
+<section class="card home-card" aria-labelledby="errTitle">
+  {% include "partials/core/error.html" %}
+  <a class="btn primary" href="/">Back to home</a>
+</section>
+{% endblock %}

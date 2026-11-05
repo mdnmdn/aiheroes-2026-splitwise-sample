@@ -1,0 +1,19 @@
+{% from "components/buttons.html" import button %}
+{% from "components/feedback.html" import err_summary %}
+{% from "components/forms.html" import field, select_field %}
+{% from "components/overlays.html" import dlg_head %}
+<form class="dlg" id="memberForm" data-new-user="{{ NEW_USER }}" method="post" action="/groups/{{ group.id }}/members" hx-post="/groups/{{ group.id }}/members" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]" novalidate>
+  {{ dlg_head("memDlgTitle", "Add member") }}
+  <div class="dlg-body">
+    {{ err_summary(errors) }}
+    {{ select_field("user_id", "User", options, selected, errors.get("user_id", "")) }}
+    {% call field("name", "Name", errors.get("name", ""), hidden=(selected != NEW_USER)) %}
+    <input class="input" id="f-name" name="name" value="{{ name }}" maxlength="{{ USER_NAME_MAX }}" autocomplete="off"{% if errors.get("name") %} aria-invalid="true"{% endif %} aria-describedby="f-name-err">
+    {% endcall %}
+    <p class="note">To let someone join on their own, share the invite code instead.</p>
+  </div>
+  <footer class="dlg-foot od-row">
+    {{ button("Cancel", "secondary", attrs={"data-close": ""}) }}
+    {{ button("Add member", "primary", type="submit") }}
+  </footer>
+</form>

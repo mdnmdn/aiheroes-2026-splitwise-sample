@@ -1,0 +1,34 @@
+{% from "components/buttons.html" import button %}
+{% from "components/data.html" import avatar %}
+{% from "components/overlays.html" import dialog, dlg_head %}
+{% set base = "/groups/" ~ group.id %}
+{% macro tone(minor) %}{{ 'pos' if minor > 0 else 'neg' if minor < 0 else 'muted' }}{% endmacro %}
+{% if is_me %}
+  {% set remove = {"hx-post": base ~ "/leave", "data-confirm-title": "Leave " ~ group.name ~ "?", "data-confirm-body": "You can rejoin later with the invite code.", "data-confirm-ok": "Leave group"} %}
+{% else %}
+  {% set remove = {"hx-post": base ~ "/members/" ~ member.id ~ "/delete", "data-confirm-title": "Remove " ~ member.name ~ "?", "data-confirm-body": "The app removes " ~ member.name ~ " from " ~ group.name ~ ". " ~ member.name ~ " can rejoin with the invite code.", "data-confirm-ok": "Remove member"} %}
+{% endif %}
+{% if not removable %}{% set _ = remove.update({"disabled": "disabled", "aria-describedby": "detNote"}) %}{% endif %}
+{% call dialog("member-dialog", "detTitle") %}
+<div class="dlg">
+  {{ dlg_head("detTitle", member.name) }}
+  <div class="dlg-body">
+    <div class="detail-head od-row">{{ avatar(member.name, member.user_id, "lg") }}<div class="od-stat od-fill"><span class="big-num num od-nowrap {{ tone(balance) }}">{{ balance|signed_money(group.currency) }}</span><span class="muted">{% if balance > 0 %}{{ member.name }} is owed{% elif balance < 0 %}{{ member.name }} owes{% else %}Settled{% endif %}</span></div></div>
+    {% if breakdown.lines %}
+    <p class="note">Paid minus share for each expense, plus payments sent, minus payments received.</p>
+    <ul class="lines">
+      {% for line in breakdown.lines %}
+      <li class="od-row"><div class="od-fill od-stack" style="--od-gap:0"><span class="od-truncate row-title">{{ line.title }}</span><span class="row-meta">{{ line.date|date }}{% if line.meta %} · {{ line.meta }}{% endif %}</span></div><span class="num od-nowrap od-fixed {{ tone(line.delta) }}">{{ line.delta|signed_money(group.currency) }}</span></li>
+      {% endfor %}
+      <li class="od-row total-line"><span class="od-fill">Balance</span><span class="num od-nowrap od-fixed {{ tone(breakdown.balance) }}">{{ breakdown.balance|signed_money(group.currency) }}</span></li>
+    </ul>
+    {% else %}
+    <p class="note">{{ member.name }} is not part of any transaction in this group yet.</p>
+    {% endif %}
+    {% if not removable %}<p class="note" id="detNote">Members with transactions in this group cannot be removed.</p>{% endif %}
+  </div>
+  <footer class="dlg-foot od-row">
+    {{ button("Leave group" if is_me else "Remove from group", "danger", attrs=remove) }}
+  </footer>
+</div>
+{% endcall %}

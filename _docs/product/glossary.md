@@ -38,6 +38,8 @@ Everything derives from expenses and payments. Balances are computed, never stor
 | **Balance** | A per-member figure: total paid for expenses, minus total of the member's shares, plus payments sent, minus payments received. A positive balance means the member is owed money. A negative balance means the member owes money. | debt, net, net position |
 | **Settlement plan** | A suggested list of payments that brings every balance in a group to zero, with as few payments as possible (F2). | simplification, debt graph |
 | **Settled** | The state of a group in which every balance is zero. | paid off, closed |
+| **Transaction** | An expense or a payment, as one row in the list of a group. | entry, item |
+| **Current user** | The user who is signed in in this browser tab. The interface calls this user "You". | logged-in user |
 
 **Balance invariant.** The total of all balances in a group is always exactly zero. A violation is a bug, not a user error.
 
@@ -73,6 +75,15 @@ Everything derives from expenses and payments. Balances are computed, never stor
 | **Expense date** | The calendar date on which an expense occurred, chosen by the user. It cannot be in the future. | date (bare), created date |
 | **Payment date** | The calendar date of a payment, chosen by the user. | date (bare) |
 | **Entry time** | The UTC time at which the app recorded a change. The activity log shows it (F6). | timestamp (bare) |
+
+## Access and navigation
+
+| Term | Definition | Not |
+|---|---|---|
+| **Sign in** | The action in which a person picks a user, or creates one by name, to operate the app in one browser tab. It is simulated: it has no password. | log in |
+| **Invite code** | A short code of a group, in the form `XXX-YYYY`. A signed-in user who enters it joins the group as a member. | invitation code |
+| **Leave** (a group) | The action in which the current user removes the own member from a group. | quit, exit |
+| **Mine filter** | The filter of the transaction list that shows only the transactions in which the member of the current user takes part. | my transactions |
 
 ## Later features
 

@@ -1,0 +1,15 @@
+{% from "components/buttons.html" import button %}
+<section class="card home-card" id="join-region" aria-labelledby="joinTitle">
+  <div class="od-stack" style="--od-gap:4px">
+    <h2 id="joinTitle">Join with a code</h2>
+    <p class="muted">Got an invite code from a friend? Enter it to join their group.</p>
+  </div>
+  <form id="joinForm" class="od-row-top" method="post" action="/groups/join" hx-post="/groups/join" hx-target="#join-region" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]" novalidate>
+    <div class="field od-field od-fill" data-k="code">
+      <label for="f-code" class="sr-only">Invite code</label>
+      <input class="input num" id="f-code" name="code" value="{{ code or '' }}" placeholder="e.g. LIS-7K2Q" autocomplete="off" autocapitalize="characters" maxlength="12"{% if errors and errors.get("code") %} aria-invalid="true"{% endif %} aria-describedby="f-code-err">
+      <p class="err" id="f-code-err">{{ errors.get("code", "") if errors else "" }}</p>
+    </div>
+    {{ button("Join", "secondary", "od-fixed", type="submit") }}
+  </form>
+</section>

@@ -1,0 +1,12 @@
+{% from "components/feedback.html" import empty_state %}
+{% from "components/rows.html" import group_row %}
+<div class="od-stack" style="--od-gap:var(--s3)" id="group-list-region">
+  <ul class="rows card group-list" id="groupList">
+    {% for group in groups.rows %}{{ group_row(group) }}{% else %}
+    {% call empty_state("No groups match", "Try another name or show all groups.", tag="li") %}
+      <button type="button" class="btn secondary sm" data-clear-filters>Clear filters</button>
+    {% endcall %}
+    {% endfor %}
+  </ul>
+  {% if oob %}<p hx-swap-oob="innerHTML:#groupCount">{{ groups.rows|length }} of {{ groups.total }} groups</p>{% endif %}
+</div>

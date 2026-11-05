@@ -1,0 +1,20 @@
+{% from "components/buttons.html" import button %}
+{% from "components/feedback.html" import err_summary %}
+{% from "components/forms.html" import field %}
+{% from "components/overlays.html" import dlg_head %}
+<form class="dlg" id="settingsForm" method="post" action="/groups/{{ group.id }}/settings" hx-post="/groups/{{ group.id }}/settings" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]" novalidate>
+  {{ dlg_head("setTitle", "Group settings") }}
+  <div class="dlg-body">
+    {{ err_summary(errors) }}
+    {% call field("name", "Name", errors.get("name", "")) %}
+    <input class="input" id="f-name" name="name" value="{{ name }}" maxlength="{{ GROUP_NAME_MAX }}" autocomplete="off" autofocus{% if errors.get("name") %} aria-invalid="true"{% endif %} aria-describedby="f-name-err">
+    {% endcall %}
+    {% call field("currency", "Base currency", hint="The base currency cannot change after the group is created.") %}
+    <input class="input" id="f-currency" value="{{ group.currency }} — {{ group.currency|symbol }}" disabled aria-describedby="f-currency-hint">
+    {% endcall %}
+  </div>
+  <footer class="dlg-foot od-row">
+    {{ button("Cancel", "secondary", attrs={"data-close": ""}) }}
+    {{ button("Save", "primary", type="submit") }}
+  </footer>
+</form>

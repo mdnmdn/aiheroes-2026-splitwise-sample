@@ -1,0 +1,9 @@
+{% from "components/icons.html" import icon %}
+{# The caller holds the .dlg root: a form or a div. The id is the target of the app.js dialog code. #}
+{% macro dialog(id, title_id, strict=false) %}
+<dialog id="{{ id }}" aria-labelledby="{{ title_id }}"{% if strict %} data-strict{% endif %}>{{ caller() }}</dialog>
+{% endmacro %}
+
+{% macro dlg_head(title_id, title) %}
+<header class="dlg-head od-row"><h2 id="{{ title_id }}">{{ title }}</h2><button type="button" class="icon-btn" data-close aria-label="Close">{{ icon("close") }}</button></header>
+{% endmacro %}

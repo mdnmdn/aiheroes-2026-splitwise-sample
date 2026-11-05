@@ -1,0 +1,18 @@
+{% from "components/buttons.html" import button %}
+{% from "components/feedback.html" import err_summary %}
+{% from "components/forms.html" import field, select_field %}
+{% from "components/overlays.html" import dlg_head %}
+<form class="dlg" id="groupForm" method="post" action="/groups" hx-post="/groups" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]" novalidate>
+  {{ dlg_head("grpTitle", "New group") }}
+  <div class="dlg-body">
+    {{ err_summary(errors) }}
+    {% call field("name", "Name", errors.get("name", "")) %}
+    <input class="input" id="f-name" name="name" value="{{ name }}" maxlength="{{ GROUP_NAME_MAX }}" autocomplete="off" placeholder="e.g. Ski week 2027" autofocus{% if errors.get("name") %} aria-invalid="true"{% endif %} aria-describedby="f-name-err">
+    {% endcall %}
+    {{ select_field("currency", "Base currency", currency_options, currency, errors.get("currency", ""), "Set once when the group is created.") }}
+  </div>
+  <footer class="dlg-foot od-row">
+    {{ button("Cancel", "secondary", attrs={"data-close": ""}) }}
+    {{ button("Create group", "primary", type="submit") }}
+  </footer>
+</form>

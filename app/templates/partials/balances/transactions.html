@@ -1,0 +1,21 @@
+{% from "components/buttons.html" import button %}
+{% from "components/feedback.html" import empty_state %}
+{% from "components/forms.html" import segmented %}
+{% from "components/rows.html" import day_group %}
+<div class="card" id="expenses-region" hx-get="/groups/{{ group.id }}/transactions" hx-trigger="ledger-changed from:body, members-changed from:body, change" hx-include="#txFilter" hx-target="this" hx-swap="outerHTML" hx-push-url="false">
+  <div class="tx-tools od-row">
+    {{ segmented("filter", [("all", "All"), ("mine", "Mine")], tx.filter, id="txFilter") }}
+    <span class="note od-nowrap" id="txCount">{{ tx.shown }} of {{ tx.total }}</span>
+  </div>
+  <div id="txList">
+    {% if tx.days %}
+    {% for day in tx.days %}{{ day_group(day, group) }}{% endfor %}
+    {% elif tx.total %}
+    {{ empty_state("Nothing involves you yet", "Expenses you paid or share in, and payments to or from you, will show here.") }}
+    {% else %}
+    {% call empty_state("No transactions yet", "Add what someone paid for the group. It is split equally between the members you choose.", "receipt") %}
+      {{ button("Add expense", "primary", icon_name="plus", attrs={"hx-get": "/groups/" ~ group.id ~ "/expenses/new", "hx-target": "#dialog-host", "hx-swap": "innerHTML"}) }}
+    {% endcall %}
+    {% endif %}
+  </div>
+</div>

@@ -82,3 +82,37 @@ run = "uv run _tools/docs.py graph"
 [tasks.docs-sync]
 description = "Regenerate the index, then stamp dates"
 run = "uv run _tools/docs.py sync"
+
+# ── Application (reference: _docs/infra/dev-environment.md) ──
+
+[tasks.dev]
+description = "Start the server with auto reload (SPLITWISE_HOST, SPLITWISE_PORT)"
+run = "uv run python -m uvicorn app.main:app --reload --host {{ get_env(name='SPLITWISE_HOST', default='127.0.0.1') }} --port {{ get_env(name='SPLITWISE_PORT', default='8000') }}"
+
+[tasks.start]
+description = "Start the server without reload (SPLITWISE_HOST, SPLITWISE_PORT)"
+run = "uv run python -m uvicorn app.main:app --host {{ get_env(name='SPLITWISE_HOST', default='127.0.0.1') }} --port {{ get_env(name='SPLITWISE_PORT', default='8000') }}"
+
+[tasks.migrate]
+description = "Apply pending migrations and exit"
+run = "uv run python -m app.core.migrate"
+
+[tasks.test]
+description = "Run all tests. Pass pytest arguments after the task name"
+run = "uv run pytest"
+
+[tasks.lint]
+description = "Check style and formatting. Changes no file"
+run = ["uv run ruff check", "uv run ruff format --check"]
+
+[tasks.fmt]
+description = "Fix lint findings and format the code"
+run = ["uv run ruff check --fix", "uv run ruff format"]
+
+[tasks.design-sync]
+description = "Copy the CSS and component JS from _design/site/assets/ to app/static/"
+run = "uv run _tools/design_sync.py"
+
+[tasks.db-reset]
+description = "CAUTION: delete the dev database, then apply all migrations"
+run = "uv run python -m app.core.migrate --reset"

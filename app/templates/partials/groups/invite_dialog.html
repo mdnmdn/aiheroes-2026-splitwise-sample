@@ -1,0 +1,17 @@
+{% from "components/buttons.html" import button %}
+{% from "components/data.html" import code_box %}
+{% from "components/overlays.html" import dialog, dlg_head %}
+{% call dialog("invite-dialog", "invTitle") %}
+<div class="dlg">
+  {{ dlg_head("invTitle", "Invite to group") }}
+  <div class="dlg-body">
+    <p class="muted">Share this code to invite people to {{ group.name }}.</p>
+    {{ code_box(group.invite_code) }}
+    <p class="note">They sign in, then enter it under <strong>Join with a code</strong> on the Groups page.</p>
+  </div>
+  <footer class="dlg-foot od-row">
+    {{ button("Done", "secondary", attrs={"data-close": ""}) }}
+    {{ button("Copy code", "primary", icon_name="copy", attrs={"data-copy": group.invite_code, "data-copied": "Code " ~ group.invite_code ~ " copied", "autofocus": ""}) }}
+  </footer>
+</div>
+{% endcall %}

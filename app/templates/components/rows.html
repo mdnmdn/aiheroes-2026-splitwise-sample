@@ -1,0 +1,38 @@
+{% from "components/data.html" import avatar, chip, tag %}
+{% from "components/icons.html" import icon %}
+{% from "components/money.html" import balance_amount %}
+{# group: a GroupRow (id, name, currency, member_count, transaction_count, balance). #}
+{% macro group_row(group) %}
+<li><a class="row-btn" href="/groups/{{ group.id }}" aria-label="{{ group.name }}: {{ group.balance|balance_label }}{% if group.balance %} {{ group.balance|abs|money(group.currency) }}{% endif %}. Open group">
+  <span class="kind-icon" aria-hidden="true">{{ icon("users") }}</span>
+  <span class="od-fill od-stack" style="--od-gap:0"><span class="row-title od-truncate">{{ group.name }}</span><span class="row-meta od-truncate">{{ group.member_count }} {{ "member" if group.member_count == 1 else "members" }} · {{ group.transaction_count }} {{ "transaction" if group.transaction_count == 1 else "transactions" }} · {{ group.currency }}</span></span>
+  {{ balance_amount(group.balance, group.currency) }}
+</a></li>
+{% endmacro %}
+
+{# row: a MemberRow (member, balance, is_me). The avatar hue follows the user id. #}
+{% macro member_row(row, group) %}
+<li><button class="row-btn" type="button" hx-get="/groups/{{ group.id }}/members/{{ row.member.id }}" hx-target="#dialog-host" hx-swap="innerHTML" aria-label="{{ row.member.name }}, {{ row.balance|balance_label }}{% if row.balance %} {{ row.balance|abs|money(group.currency) }}{% endif %}. Show details">
+  {{ avatar(row.member.name, row.member.user_id) }}
+  <span class="od-fill od-row"><span class="row-title od-truncate">{{ row.member.name }}</span>{% if row.is_me %}{{ chip("You", hot=true, cls="od-fixed") }}{% endif %}</span>
+  {{ balance_amount(row.balance, group.currency) }}
+</button></li>
+{% endmacro %}
+
+{# row: a TxRow (kind, id, date, amount, title, meta). A click opens the edit dialog. #}
+{% macro tx_row(row, group) %}
+{% set is_expense = row.kind == "expense" %}
+<li><button class="row-btn" type="button" hx-get="/groups/{{ group.id }}/{{ 'expenses' if is_expense else 'payments' }}/{{ row.id }}/edit" hx-target="#dialog-host" hx-swap="innerHTML" aria-label="{{ 'Expense' if is_expense else 'Payment' }}: {{ row.title }}, {{ row.amount|money(group.currency) }}{% if row.meta %}, {{ row.meta }}{% endif %}. Edit">
+  <span class="kind-icon{{ '' if is_expense else ' pay' }}" aria-hidden="true">{{ icon("receipt" if is_expense else "pay") }}</span>
+  <span class="od-fill od-stack" style="--od-gap:0">
+    <span class="od-row"><span class="row-title od-truncate">{{ row.title }}</span>{{ tag(row.kind) }}</span>
+    <span class="row-meta od-truncate">{{ row.meta }}</span>
+  </span>
+  <span class="amt od-fixed"><span class="num od-nowrap">{{ row.amount|money(group.currency) }}</span></span>
+</button></li>
+{% endmacro %}
+
+{# day: a DayGroup (date, rows). #}
+{% macro day_group(day, group) %}
+<div class="day-group"><h3 class="day">{{ day.date|date }}</h3><ul class="rows">{% for row in day.rows %}{{ tx_row(row, group) }}{% endfor %}</ul></div>
+{% endmacro %}

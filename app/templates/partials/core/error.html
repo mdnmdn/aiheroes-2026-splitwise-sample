@@ -1,0 +1,6 @@
+<div class="empty" role="alert" data-error-code="{{ code }}">
+  <h1 id="errTitle">{{ status }}</h1>
+  <p>{{ message }}</p>
+  {% if status >= 500 and request_id %}<p class="note">Request id: <span class="num">{{ request_id }}</span></p>{% endif %}
+  {% if fields %}<ul>{% for name, text in fields.items() %}<li>{{ name }}: {{ text }}</li>{% endfor %}</ul>{% endif %}
+</div>

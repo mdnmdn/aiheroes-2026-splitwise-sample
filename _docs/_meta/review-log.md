@@ -22,6 +22,7 @@ checks by their ids from the revision checklist in [`librarian.md`](./librarian.
 | date | scope | checks run | counts | notes |
 |---|---|---|---|---|
 | 2026-11-05 | setup | L1–L12 | — | library created from the sample scheme, phase product ideation |
+| 2026-11-05 | phase change | L1–L12 | — | phase changed from product ideation to development: `phases.md`, `authoring.md`, `AGENTS.md`, `Home.md` and `backlog.md` aligned |
 
 ## Related docs
 

@@ -12,3 +12,8 @@ __pycache__/
 .DS_Store
 .obsidian/workspace*.json
 mise.local.toml
+
+# Local settings and caches
+.env
+.pytest_cache/
+.ruff_cache/

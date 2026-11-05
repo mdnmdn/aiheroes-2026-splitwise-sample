@@ -176,7 +176,7 @@ skeletons and checks are live.
 | G5 | The fact-ownership registry in `Home.md` · check **L6** |
 | G6 | The timelessness rules in `librarian.md` · check **L5** |
 | G7 | `backlog.md` and `_meta/feedback.md` · check **L8** |
-| G8 | `authoring.md`: the two verbs · `librarian.md`: the powers of the bookkeeper · `phases.md`: humans name the phase |
+| G8 | `authoring.md`: the two verbs · `librarian.md`: the powers of the librarian · `phases.md`: humans name the phase |
 | G9 | `authoring.md`: the same-session duty · check **L11**, which finds the date left behind |
 | G10 | The length, content-type and fence bands · checks **L4** and **L9** |
 | G11 | The shape of the repository: plain markdown, no generator, no database |

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "components/buttons.html" import button %}
+{% from "components/navigation.html" import actionbar %}
+{% set ledger_actions = true %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block main_class %}layout{% endblock %}
+{% block main %}
+<section class="sticky-side" aria-labelledby="memTitle">
+  <div class="panel-head od-row">
+    <h2 id="memTitle" tabindex="-1">Members</h2>
+    <div class="head-actions od-row">
+      {{ button("Add", "ghost", "sm", "plus", attrs={"hx-get": "/groups/" ~ group.id ~ "/members/new", "hx-target": "#dialog-host", "hx-swap": "innerHTML"}) }}
+      {{ button("Invite", "secondary", "sm", "users", attrs={"hx-get": "/groups/" ~ group.id ~ "/invite", "hx-target": "#dialog-host", "hx-swap": "innerHTML"}) }}
+    </div>
+  </div>
+  {% include "partials/members/panel.html" %}
+</section>
+
+<section aria-labelledby="txTitle">
+  <div class="panel-head od-row">
+    <h2 id="txTitle">Transactions</h2>
+    {% if ledger_actions %}
+    <div class="head-actions od-row desktop-only">
+      {{ button("Add payment", "secondary", attrs={"hx-get": "/groups/" ~ group.id ~ "/payments/new", "hx-target": "#dialog-host", "hx-swap": "innerHTML"}) }}
+      {{ button("Add expense", "primary", icon_name="plus", attrs={"hx-get": "/groups/" ~ group.id ~ "/expenses/new", "hx-target": "#dialog-host", "hx-swap": "innerHTML"}) }}
+    </div>
+    {% endif %}
+  </div>
+  {% include "partials/balances/transactions.html" %}
+</section>
+{% endblock %}
+{% block after_main %}{{ actionbar(group) }}{% endblock %}
