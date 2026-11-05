@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your groups — Splitwise</title>
+<link rel="stylesheet" href="assets/splitwise.css">
+<script src="assets/splitwise.js"></script>
+<script src="assets/splitwise-app.js"></script>
+</head>
+<body>
+<noscript><p class="noscript-banner">This prototype needs JavaScript. The preview has scripts turned off, so the theme picker, sign-in and buttons can't work here — open the file in a browser instead.</p></noscript>
+<script>/* script-health check: tells you if the shared scripts didn't load */
+window.addEventListener('DOMContentLoaded', function () { if (!window.Splitwise || (true && !window.SplitwiseApp)) document.body.insertAdjacentHTML('afterbegin', '<p class="noscript-banner">The shared scripts in assets/ didn’t load, so theme switching and buttons won’t work. Check that the assets folder sits next to this page.</p>'); });</script>
+<!-- Page: your groups (entry point). Components: App top bar, Group picker,
+     Field, Empty state, Dialog (storybook → Patterns / Overlays). -->
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar" id="topbar"></header>
+
+<main class="home" id="main">
+  <section class="card home-card" aria-labelledby="homeTitle">
+    <div class="od-stack" style="--od-gap:4px">
+      <h1 id="homeTitle">Your groups</h1>
+      <p class="muted" id="homeSub">Open a group to see balances and transactions.</p>
+    </div>
+    <!-- Filterable group list (storybook → Patterns → Group list) -->
+    <div class="od-stack" style="--od-gap:var(--s3)" id="listArea">
+      <div class="od-row">
+        <label for="groupSearch" class="sr-only">Search groups</label>
+        <input class="input od-fill" type="search" id="groupSearch" placeholder="Search groups" autocomplete="off" aria-controls="groupList">
+        <button type="button" class="icon-btn outline od-fixed" data-create aria-label="Create a new group"><span data-icon="plus"></span></button>
+      </div>
+      <fieldset class="menu-group"><legend class="sr-only">Show</legend>
+        <div class="segmented" id="groupFilter">
+          <label><input type="radio" name="gf" value="all" checked><span>All</span></label>
+          <label><input type="radio" name="gf" value="owe"><span>You owe</span></label>
+          <label><input type="radio" name="gf" value="owed"><span>You're owed</span></label>
+        </div>
+      </fieldset>
+      <ul class="rows card group-list" id="groupList"></ul>
+      <p class="note" id="groupCount" role="status"></p>
+    </div>
+    <div class="empty" id="homeEmpty" hidden>
+      <span class="kind-icon"><span data-icon="users"></span></span>
+      <h3>You're not in any group yet</h3>
+      <p>Create a group for your trip, flat or regular tab, or join one with an invite code below.</p>
+      <button class="btn primary" type="button" data-create><span data-icon="plus"></span>Create group</button>
+    </div>
+  </section>
+
+  <section class="card home-card" aria-labelledby="joinTitle">
+    <div class="od-stack" style="--od-gap:4px">
+      <h2 id="joinTitle">Join with a code</h2>
+      <p class="muted">Got an invite code from a friend? Enter it to join their group.</p>
+    </div>
+    <form id="joinForm" class="od-row-top" novalidate>
+      <div class="field od-field od-fill" data-k="code">
+        <label for="joinCode" class="sr-only">Invite code</label>
+        <input class="input num" id="joinCode" name="code" placeholder="e.g. LIS-7K2Q" autocomplete="off" autocapitalize="characters" maxlength="12" aria-describedby="joinErr">
+        <p class="err" id="joinErr"></p>
+      </div>
+      <button class="btn secondary od-fixed" type="submit" style="min-height:44px">Join</button>
+    </form>
+  </section>
+</main>
+
+<!-- Create group -->
+<dialog id="groupDlg" aria-labelledby="grpTitle">
+  <form class="dlg" id="groupForm" novalidate>
+    <header class="dlg-head od-row"><h2 id="grpTitle">New group</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></header>
+    <div class="dlg-body">
+      <div class="err-summary" tabindex="-1" hidden></div>
+      <div class="field od-field" data-k="name">
+        <label for="grpName">Group name</label>
+        <input class="input" id="grpName" name="name" maxlength="50" autocomplete="off" placeholder="e.g. Ski week 2027" aria-describedby="grpNameErr">
+        <p class="err" id="grpNameErr"></p>
+      </div>
+      <div class="field od-field">
+        <label for="grpCur">Currency</label>
+        <select class="input" id="grpCur" name="currency" aria-describedby="grpCurHint"></select>
+        <p class="hint" id="grpCurHint">Set once when the group is created.</p>
+      </div>
+    </div>
+    <footer class="dlg-foot od-row">
+      <button type="button" class="btn secondary" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Create group</button>
+    </footer>
+  </form>
+</dialog>
+
+<script>
+const App = SplitwiseApp, M = Splitwise.money, F = Splitwise.forms, { $, esc } = Splitwise;
+const me = App.requireUser();
+if (me) {
+  App.renderTopbar($('#topbar'));
+  App.takeFlash();
+  const openGroup = id => { location.href = 'group.html?id=' + encodeURIComponent(id); };
+
+  /* filterable group list: text search on name + All / You owe / You're owed */
+  const mine = App.myGroups()
+    .map(g => ({ g, v: App.balances(g).get(me) }))
+    .sort((a, b) => a.g.name.localeCompare(b.g.name));
+  $('#listArea').hidden = !mine.length; $('#homeSub').hidden = !mine.length; $('#homeEmpty').hidden = !!mine.length;
+  const filterVal = () => document.querySelector('input[name=gf]:checked').value;
+  function renderList() {
+    const q = $('#groupSearch').value.trim().toLowerCase(), f = filterVal();
+    const shown = mine.filter(({ g, v }) => g.name.toLowerCase().includes(q) && (f === 'all' || (f === 'owe' ? v < 0 : v > 0)));
+    $('#groupList').innerHTML = shown.length ? shown.map(({ g, v }) => `
+      <li><a class="row-btn" href="group.html?id=${encodeURIComponent(g.id)}" aria-label="${esc(g.name)}: ${Splitwise.balance.label(v)} ${v ? M.fmt(Math.abs(v), g.currency) : ''}. Open group">
+        <span class="kind-icon" aria-hidden="true">${Splitwise.icon('users')}</span>
+        <span class="od-fill od-stack" style="--od-gap:0">
+          <span class="row-title od-truncate">${esc(g.name)}</span>
+          <span class="row-meta od-truncate">${g.members.length} members · ${g.tx.length} transactions · ${g.currency}</span>
+        </span>
+        ${Splitwise.balance.html(v, g.currency)}
+      </a></li>`).join('')
+      : `<li class="empty"><h3>No groups match</h3><p>Try another name or show all groups.</p><button type="button" class="btn secondary sm" id="clearFilters">Clear filters</button></li>`;
+    $('#groupCount').textContent = `${shown.length} of ${mine.length} groups`;
+    $('#clearFilters')?.addEventListener('click', () => {
+      $('#groupSearch').value = ''; document.querySelector('input[name=gf][value=all]').checked = true; renderList(); $('#groupSearch').focus();
+    });
+  }
+  $('#groupSearch').addEventListener('input', renderList);
+  $('#groupFilter').addEventListener('change', renderList);
+  renderList();
+
+  /* create group */
+  const grpForm = $('#groupForm');
+  grpForm.currency.innerHTML = App.CURRENCIES.map(c => `<option value="${c}"${c === 'EUR' ? ' selected' : ''}>${c} — ${M.symbol(c)}</option>`).join('');
+  document.querySelectorAll('[data-create]').forEach(b => b.onclick = () => {
+    grpForm.name.value = ''; F.reset(grpForm); $('#groupDlg').showModal(); grpForm.name.focus();
+  });
+  F.bind(grpForm, () => {
+    const n = grpForm.name.value.trim();
+    return n ? n.length > 50 ? { name: 'Keep it under 50 characters.' } : {} : { name: 'Give the group a name.' };
+  }, () => {
+    const name = grpForm.name.value.trim();
+    const g = { id: Splitwise.uid(), name, currency: grpForm.currency.value, code: App.makeCode(name), members: [me], tx: [] };
+    App.state.groups.push(g); App.save();
+    App.flash(`${name} created — invite people with its code`);
+    openGroup(g.id);
+  });
+
+  /* join with code */
+  const joinForm = $('#joinForm');
+  const byCode = c => App.state.groups.find(g => g.code === c.trim().toUpperCase());
+  F.bind(joinForm, () => {
+    const c = joinForm.code.value.trim();
+    return !c ? { code: 'Enter an invite code.' } : !byCode(c) ? { code: 'No group uses this code. Check it with the person who invited you.' } : {};
+  }, () => {
+    const g = byCode(joinForm.code.value);
+    if (g.members.includes(me)) App.flash(`You're already in ${g.name}`);
+    else { g.members.push(me); App.save(); App.flash(`You joined ${g.name}`); }
+    openGroup(g.id);
+  });
+}
+</script>
+</body>
+</html>

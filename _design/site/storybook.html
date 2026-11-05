@@ -1,0 +1,1087 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Splitwise UI kit — Storybook</title>
+<!-- The two shared files every Splitwise page loads. -->
+<link rel="stylesheet" href="assets/splitwise.css">
+<script src="assets/splitwise.js"></script>
+<style>
+/* Storybook-only chrome (sb-*). Product components live in assets/splitwise.css. */
+.sb-topbar-in { max-width: none; }
+.sb-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); max-width: 1280px; margin: 0 auto; }
+.sb-nav { position: sticky; top: var(--topbar-h); align-self: start; max-height: calc(100dvh - var(--topbar-h)); overflow-y: auto; padding: var(--s4) var(--s3) var(--s6); border-right: 1px solid var(--border); }
+.sb-nav h2 { font-size: var(--fs-xs); font-weight: 500; color: var(--subtle); text-transform: uppercase; letter-spacing: .06em; padding: 0 var(--s3); margin: var(--s4) 0 var(--s1); }
+.sb-nav a { display: flex; align-items: center; min-height: 36px; padding: 0 var(--s3); border-radius: var(--r-sm); color: var(--muted); text-decoration: none; font-size: var(--fs-sm); }
+.sb-nav a[aria-current="true"] { background: var(--accent-soft); color: var(--text); font-weight: 500; }
+@media (hover: hover) { .sb-nav a:hover { background: var(--hover); color: var(--text); } }
+.sb-main { padding: var(--s6) var(--s6) var(--s8); display: grid; gap: var(--s8); min-width: 0; }
+.sb-story { scroll-margin-top: calc(var(--topbar-h) + var(--s4)); display: grid; gap: var(--s4); min-width: 0; }
+.sb-kicker { font-size: var(--fs-xs); font-weight: 500; color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+.sb-story > header { display: grid; gap: var(--s2); }
+.sb-story h2 { font-size: var(--fs-xl); font-weight: 600; letter-spacing: -0.02em; }
+.sb-story h3 { font-size: var(--fs-md); font-weight: 600; margin-top: var(--s2); }
+.sb-lead { color: var(--muted); max-width: 68ch; }
+.sb-hero h1 { font-size: clamp(28px, 5vw, 32px); font-weight: 600; letter-spacing: -0.02em; }
+.sb-example { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--bg); padding: var(--s5); display: grid; gap: var(--s4); min-width: 0; }
+.sb-example.surface { background: var(--surface); }
+.sb-example.tight { padding: 0; overflow: hidden; }
+.sb-cap { font-family: var(--mono); font-size: var(--fs-xs); color: var(--subtle); }
+.sb-code { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface-2); min-width: 0; }
+.sb-code > summary { min-height: 40px; padding: 0 var(--s4); font-size: var(--fs-sm); font-weight: 500; color: var(--muted); display: flex; align-items: center; }
+.sb-code-body { border-top: 1px solid var(--border); position: relative; }
+.sb-code pre { margin: 0; padding: var(--s4); padding-right: 88px; overflow-x: auto; font-family: var(--mono); font-size: var(--fs-xs); line-height: 1.6; tab-size: 2; }
+.sb-copy { position: absolute; top: var(--s2); right: var(--s2); }
+.sb-api { border-top: 1px solid var(--border); }
+.sb-api li { display: grid; grid-template-columns: minmax(140px, 280px) minmax(0, 1fr); gap: var(--s4); padding: var(--s2) 0; border-bottom: 1px solid var(--border); font-size: var(--fs-sm); }
+.sb-api code, .sb-lead code, .sb-story p code { font-family: var(--mono); font-size: 0.92em; background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere; }
+.sb-api span { color: var(--muted); }
+.sb-tokens { --od-cols: 4; }
+.sb-token { display: grid; gap: var(--s1); font-size: var(--fs-xs); }
+.sb-token i { display: block; height: 56px; border-radius: var(--r-sm); border: 1px solid var(--border); background: var(--tok); }
+.sb-token b { font-family: var(--mono); font-weight: 500; }
+.sb-token span { font-family: var(--mono); color: var(--muted); }
+.sb-type > div { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: var(--s4); align-items: baseline; padding: var(--s2) 0; border-bottom: 1px solid var(--border); }
+.sb-space { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: var(--s4); align-items: center; font-size: var(--fs-xs); }
+.sb-space i { display: block; height: 12px; width: var(--w); background: var(--accent); border-radius: 2px; }
+.sb-radius { --od-cols: 4; }
+.sb-radius i { display: block; height: 64px; border: 1px solid var(--border-strong); background: var(--surface); }
+.sb-icons { --od-cols: 6; }
+.sb-icons > div { display: grid; justify-items: center; gap: var(--s2); padding: var(--s3); border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface); font-family: var(--mono); font-size: var(--fs-xs); color: var(--muted); }
+.sb-icons svg.i { width: 24px; height: 24px; color: var(--text); }
+.sb-motion-box { width: 48px; height: 48px; border-radius: var(--r-sm); background: var(--accent); transition: transform var(--t-fast) var(--ease-in); }
+.sb-motion-box.on { transform: translateX(120px); transition-duration: var(--t-med); transition-timing-function: var(--ease-out); }
+.sb-demo-box { padding: var(--s2) var(--s3); border: 1px dashed var(--border-strong); border-radius: var(--r-sm); background: var(--surface); font-size: var(--fs-sm); }
+/* Frames neutralize fixed/sticky chrome so it can be shown inline. */
+.sb-frame { position: relative; overflow: hidden; border-radius: var(--r-md); }
+.sb-frame .topbar, .sb-frame .actionbar { position: static; }
+.sb-frame.sb-open { overflow: visible; } /* lets the user menu popover open */
+.sb-frame .login { min-height: 0; padding: var(--s6) var(--s4); }
+.sb-money { --od-cols: 4; }
+.sb-row-split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5); }
+@media (max-width: 1100px) { .sb-tokens { --od-cols: 3; } .sb-icons { --od-cols: 4; } }
+@media (max-width: 899px) {
+  .sb-shell { grid-template-columns: 1fr; }
+  .sb-nav { position: sticky; top: var(--topbar-h); z-index: 5; max-height: none; background: var(--bg); border-right: 0; border-bottom: 1px solid var(--border); padding: var(--s2) 0; overflow-x: auto; scrollbar-width: none; }
+  .sb-nav { display: flex; gap: var(--s1); padding-inline: var(--s4); }
+  .sb-nav h2 { display: none; }
+  .sb-nav ul { display: flex; gap: var(--s1); flex: none; }
+  .sb-nav a { white-space: nowrap; }
+  .sb-main { padding: var(--s5) var(--s4) var(--s8); gap: var(--s7); }
+  .sb-story { scroll-margin-top: calc(var(--topbar-h) + 64px); }
+  .sb-row-split { grid-template-columns: 1fr; }
+  .sb-tokens, .sb-money, .sb-radius { --od-cols: 2; }
+  .sb-icons { --od-cols: 3; }
+  .sb-api li, .sb-type > div, .sb-space { grid-template-columns: 1fr; gap: var(--s1); }
+  .sb-example { padding: var(--s4); }
+}
+</style>
+</head>
+<body>
+<noscript><p class="noscript-banner">This prototype needs JavaScript. The preview has scripts turned off, so the theme picker, sign-in and buttons can't work here — open the file in a browser instead.</p></noscript>
+<script>/* script-health check: tells you if the shared scripts didn't load */
+window.addEventListener('DOMContentLoaded', function () { if (!window.Splitwise || (false && !window.SplitwiseApp)) document.body.insertAdjacentHTML('afterbegin', '<p class="noscript-banner">The shared scripts in assets/ didn’t load, so theme switching and buttons won’t work. Check that the assets folder sits next to this page.</p>'); });</script>
+<a class="skip" href="#sb-main">Skip to content</a>
+
+<header class="topbar">
+  <div class="topbar-in sb-topbar-in od-row">
+    <div class="brand od-row od-fixed">
+      <span class="brand-mark"><span data-icon="logo"></span></span>
+      <span>Splitwise UI kit</span>
+    </div>
+    <span class="chip od-fixed" id="sbVersion"></span>
+    <span class="od-fill"></span>
+    <a class="btn ghost sm od-fixed" href="index.html">Open app</a>
+    <div class="od-fixed" id="sbAppearance"></div>
+  </div>
+</header>
+
+<div class="sb-shell">
+  <nav class="sb-nav" id="sbNav" aria-label="Components"></nav>
+
+  <main class="sb-main" id="sb-main">
+
+    <!-- ===================================================== OVERVIEW -->
+    <section class="sb-story sb-hero" id="overview" data-group="Foundations" data-title="Overview">
+      <header>
+        <p class="sb-kicker">Splitwise UI kit · v1</p>
+        <h1>One stylesheet, one script, every page</h1>
+        <p class="sb-lead">This page is the reference for every Splitwise screen. All components below are rendered live from the same two files the app uses, so what you see here is exactly what ships. Switch theme and accent in the top bar: every story updates.</p>
+      </header>
+      <script type="text/plain" data-snippet="HTML — page skeleton">
+        <!doctype html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Page — Splitwise</title>
+          <link rel="stylesheet" href="assets/splitwise.css">
+          <!-- in <head>, no defer: applies saved theme + accent before first paint -->
+          <script src="assets/splitwise.js"><\/script>
+          <!-- app pages only: data, money engine, session, shared top bar -->
+          <script src="assets/splitwise-app.js"><\/script>
+        </head>
+        <body>
+          <a class="skip" href="#main">Skip to content</a>
+          <header class="topbar" id="topbar"></header>
+          <main class="layout" id="main">…</main>
+          <script>
+            const me = SplitwiseApp.requireUser();        // mockup: the sample user (Alice) when nobody signed in
+            if (me) {
+              SplitwiseApp.renderTopbar(document.getElementById('topbar'));
+              SplitwiseApp.takeFlash();                   // toast left by the previous page
+              /* page logic: Splitwise.* for UI, SplitwiseApp.* for data */
+            }
+          <\/script>
+        </body>
+        </html>
+      </script>
+      <ul class="sb-api">
+        <li><code>assets/splitwise.css</code><span>Tokens, themes, accents and every component class. Sections are numbered and commented.</span></li>
+        <li><code>assets/splitwise.js</code><span>The <code>Splitwise</code> global: icons, appearance, toast, confirm, form validation, money, balance and avatar helpers.</span></li>
+        <li><code>assets/splitwise-app.js</code><span>The <code>SplitwiseApp</code> global for app pages: data, money engine, sign-in guard and the shared top bar. See <a href="#pages">App pages</a>.</span></li>
+        <li><code>&lt;span data-icon="name"&gt;</code><span>Icon placeholder, swapped for the SVG on load (or after <code>Splitwise.hydrate(el)</code>).</span></li>
+        <li><code>[data-close]</code><span>Any button inside a <code>&lt;dialog&gt;</code> with this attribute closes it.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================================================== COLOUR -->
+    <section class="sb-story" id="colour" data-group="Foundations" data-title="Colour">
+      <header>
+        <p class="sb-kicker">Foundations</p>
+        <h2>Colour tokens</h2>
+        <p class="sb-lead">Always use the CSS variables, never a hex value. Light and dark values are chosen separately for at least 4.5:1 text contrast. The accent tokens change with the accent picker; <code>--pos</code> and <code>--neg</code> never do, because they carry meaning.</p>
+      </header>
+      <div class="sb-example surface" id="sbColours"></div>
+      <ul class="sb-api">
+        <li><code>--bg / --surface / --surface-2</code><span>Page ground, cards and dialogs, subtle fills.</span></li>
+        <li><code>--text / --muted / --subtle</code><span>Primary text, secondary text, tertiary labels. All pass AA on every surface.</span></li>
+        <li><code>--accent*</code><span>Primary buttons, focus rings, selected states. <code>--accent-fg</code> is the text colour on an accent fill.</span></li>
+        <li><code>--accent-2*</code><span>Orange highlight: brand mark, payment icons, <code>.chip.hot</code>. Use <code>--accent-2</code> only as a fill with <code>--accent-2-fg</code> text; for orange text use <code>--accent-2-ink</code>.</span></li>
+        <li><code>--pos / --neg</code><span>Money only, always together with a sign and a label.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================================================== TYPE -->
+    <section class="sb-story" id="type" data-group="Foundations" data-title="Typography">
+      <header>
+        <p class="sb-kicker">Foundations</p>
+        <h2>Typography</h2>
+        <p class="sb-lead">Geist for all UI text, Geist Mono with tabular figures for every amount (<code>.num</code>), so columns of money line up. Body text is 16px with a 1.5 line height.</p>
+      </header>
+      <div class="sb-example surface sb-type">
+        <div><span class="sb-cap">--fs-2xl 32</span><span style="font-size:var(--fs-2xl);font-weight:500" class="num">€1,234.56</span></div>
+        <div><span class="sb-cap">--fs-xl 24</span><span style="font-size:var(--fs-xl);font-weight:600;letter-spacing:-0.02em">Dialog and page titles</span></div>
+        <div><span class="sb-cap">--fs-lg 20</span><span style="font-size:var(--fs-lg);font-weight:600">Section heading</span></div>
+        <div><span class="sb-cap">--fs-md 16</span><span>Body text, inputs and row titles.</span></div>
+        <div><span class="sb-cap">--fs-sm 14</span><span style="font-size:var(--fs-sm)" class="muted">Buttons, labels, meta lines and hints.</span></div>
+        <div><span class="sb-cap">--fs-xs 12</span><span style="font-size:var(--fs-xs)" class="muted">CAPTIONS, CHIPS, DAY HEADERS</span></div>
+      </div>
+    </section>
+
+    <!-- ===================================================== SPACING -->
+    <section class="sb-story" id="spacing" data-group="Foundations" data-title="Spacing & radius">
+      <header>
+        <p class="sb-kicker">Foundations</p>
+        <h2>Spacing and radius</h2>
+        <p class="sb-lead">A 4/8 rhythm. Use <code>--s1</code>…<code>--s8</code> for every gap and padding; three radii cover controls, cards and dialogs.</p>
+      </header>
+      <div class="sb-example surface od-stack" style="--od-gap:var(--s2)">
+        <div class="sb-space"><span class="sb-cap">--s1 4</span><i style="--w:var(--s1)"></i></div>
+        <div class="sb-space"><span class="sb-cap">--s2 8</span><i style="--w:var(--s2)"></i></div>
+        <div class="sb-space"><span class="sb-cap">--s3 12</span><i style="--w:var(--s3)"></i></div>
+        <div class="sb-space"><span class="sb-cap">--s4 16</span><i style="--w:var(--s4)"></i></div>
+        <div class="sb-space"><span class="sb-cap">--s5 24</span><i style="--w:var(--s5)"></i></div>
+        <div class="sb-space"><span class="sb-cap">--s6 32</span><i style="--w:var(--s6)"></i></div>
+        <div class="sb-space"><span class="sb-cap">--s7 48</span><i style="--w:var(--s7)"></i></div>
+        <div class="sb-space"><span class="sb-cap">--s8 64</span><i style="--w:var(--s8)"></i></div>
+      </div>
+      <div class="sb-example surface od-grid sb-radius">
+        <div class="od-stack"><i style="border-radius:var(--r-sm)"></i><span class="sb-cap">--r-sm 6 · controls</span></div>
+        <div class="od-stack"><i style="border-radius:var(--r-md)"></i><span class="sb-cap">--r-md 10 · cards</span></div>
+        <div class="od-stack"><i style="border-radius:var(--r-lg)"></i><span class="sb-cap">--r-lg 14 · dialogs</span></div>
+        <div class="od-stack"><i style="border-radius:var(--r-full)"></i><span class="sb-cap">--r-full · avatars</span></div>
+      </div>
+    </section>
+
+    <!-- ===================================================== MOTION -->
+    <section class="sb-story" id="motion" data-group="Foundations" data-title="Motion">
+      <header>
+        <p class="sb-kicker">Foundations</p>
+        <h2>Motion</h2>
+        <p class="sb-lead">Motion only explains a change of state. Enter with <code>--t-med</code> + <code>--ease-out</code>, exit faster with <code>--t-fast</code> + <code>--ease-in</code>. Only animate transform and opacity. Everything is switched off under <code>prefers-reduced-motion</code>.</p>
+      </header>
+      <div class="sb-example surface od-row" style="--od-gap:var(--s5)">
+        <button class="btn secondary od-fixed" type="button" id="sbMotionBtn" aria-pressed="false">Play enter / exit</button>
+        <div class="sb-motion-box" id="sbMotionBox" aria-hidden="true"></div>
+      </div>
+      <ul class="sb-api">
+        <li><code>--t-fast 150ms</code><span>Hover, exits, small state feedback.</span></li>
+        <li><code>--t-med 200ms</code><span>Dialogs, toasts and menus entering.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================================================== ICONS -->
+    <section class="sb-story" id="icons" data-group="Foundations" data-title="Icons">
+      <header>
+        <p class="sb-kicker">Foundations</p>
+        <h2>Icons</h2>
+        <p class="sb-lead">One outline family on a 24px grid with a 1.5 stroke. Icons sit next to text; an icon-only button must carry an <code>aria-label</code>.</p>
+      </header>
+      <div class="sb-example surface od-grid sb-icons" id="sbIcons"></div>
+      <script type="text/plain" data-snippet="HTML / JS">
+        <!-- static markup: replaced on load -->
+        <span data-icon="receipt"></span>
+
+        // inside JS templates
+        `<span class="kind-icon">${Splitwise.icon('receipt')}</span>`
+        Splitwise.icon('info', 'More information')   // standalone → gets role="img" + label
+      </script>
+    </section>
+
+    <!-- ===================================================== LAYOUT -->
+    <section class="sb-story" id="layout" data-group="Foundations" data-title="Layout primitives">
+      <header>
+        <p class="sb-kicker">Foundations</p>
+        <h2>Layout primitives</h2>
+        <p class="sb-lead">Structure-only helpers in the <code>od-layout</code> layer: rows, stacks, grids and text overflow. Compose components from them instead of writing new flex rules. Data text (names, descriptions) may truncate; amounts and buttons never do.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="od-row">
+          <div class="sb-demo-box od-fixed">.od-fixed</div>
+          <div class="sb-demo-box od-fill"><span class="od-truncate">.od-fill + .od-truncate — Apartment in Alfama, 3 nights, booked through the host directly</span></div>
+          <div class="sb-demo-box od-fixed num od-nowrap">€342.00</div>
+        </div>
+        <div class="od-stat sb-demo-box">
+          <span class="stat-num num">€452.90</span>
+          <span class="stat-cap">.od-stat: two blocks, never sibling spans</span>
+        </div>
+        <div class="od-grid" style="--od-cols:3">
+          <div class="sb-demo-box">.od-grid</div><div class="sb-demo-box">--od-cols: 3</div><div class="sb-demo-box">minmax(0,1fr)</div>
+        </div>
+      </div>
+      <ul class="sb-api">
+        <li><code>.od-row / .od-stack / .od-cluster</code><span>Flex row (centred), column, wrapping row. Gap via <code>--od-gap</code>.</span></li>
+        <li><code>.od-fill / .od-fixed</code><span>Child that takes the remaining space / never shrinks.</span></li>
+        <li><code>.od-grid</code><span>Equal columns via <code>--od-cols</code>.</span></li>
+        <li><code>.od-stat / .od-field</code><span>Stacked blocks: numeral over caption, label over control.</span></li>
+        <li><code>.od-truncate / .od-nowrap</code><span>One-line ellipsis for data text / keep amount and currency together.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================================================== BUTTONS -->
+    <section class="sb-story" id="buttons" data-group="Controls" data-title="Buttons">
+      <header>
+        <p class="sb-kicker">Controls</p>
+        <h2>Buttons</h2>
+        <p class="sb-lead">Use one <code>.primary</code> per screen for the main action (Add payment, Save). <code>.secondary</code> for alternatives, <code>.ghost</code> for low-emphasis actions, <code>.danger</code> for destructive ones, which always go through <code>Splitwise.confirm</code>.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="od-cluster">
+          <button class="btn primary" type="button"><span data-icon="plus"></span>Add payment</button>
+          <button class="btn secondary" type="button">Internal transfer</button>
+          <button class="btn ghost" type="button">Cancel</button>
+          <button class="btn danger" type="button">Delete</button>
+        </div>
+        <div class="od-cluster">
+          <button class="btn secondary sm" type="button">Settle up</button>
+          <button class="btn primary" type="button" disabled>Disabled</button>
+          <button class="btn primary" type="button" id="sbLoadingBtn">Save expense</button>
+          <button class="icon-btn" type="button" aria-label="Close"><span data-icon="close"></span></button>
+          <button class="link-btn" type="button">Select all</button>
+        </div>
+      </div>
+      <ul class="sb-api">
+        <li><code>.btn.primary|secondary|ghost|danger</code><span>Variants. 40px tall, 14px label.</span></li>
+        <li><code>.btn.sm / .btn.block</code><span>36px compact / full-width 44px (login, sheets).</span></li>
+        <li><code>[aria-busy="true"]</code><span>Loading: shows a spinner and blocks clicks. Click "Save expense" above.</span></li>
+        <li><code>.icon-btn</code><span>44×44 icon-only button. Needs <code>aria-label</code>.</span></li>
+        <li><code>.link-btn</code><span>Inline text action inside forms.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================================================== TEXT FIELDS -->
+    <section class="sb-story" id="fields" data-group="Controls" data-title="Text fields">
+      <header>
+        <p class="sb-kicker">Controls</p>
+        <h2>Text fields</h2>
+        <p class="sb-lead">Every control sits in a <code>.field.od-field</code> with a visible label. Placeholders are examples, never labels. <code>data-k</code> connects the field to <code>Splitwise.forms</code> error messages.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="field od-field" data-k="desc">
+          <label for="sb-desc">Description</label>
+          <input class="input" id="sb-desc" maxlength="100" placeholder="e.g. Groceries at Pingo Doce" aria-describedby="sb-desc-hint">
+          <p class="hint" id="sb-desc-hint">Up to 100 characters.</p>
+          <p class="err"></p>
+        </div>
+        <div class="field od-field" data-k="name">
+          <label for="sb-name-err">Name</label>
+          <input class="input" id="sb-name-err" value="alice" aria-invalid="true" aria-describedby="sb-name-err-msg">
+          <p class="err" id="sb-name-err-msg">Alice is already in this group. Use a different name.</p>
+        </div>
+        <div class="field od-field">
+          <label for="sb-note">Note</label>
+          <textarea class="input" id="sb-note" placeholder="Optional details"></textarea>
+        </div>
+        <div class="field od-field">
+          <label for="sb-dis">Currency</label>
+          <input class="input" id="sb-dis" value="EUR" disabled aria-describedby="sb-dis-hint">
+          <p class="hint" id="sb-dis-hint">Set when the group is created and can't be changed.</p>
+        </div>
+      </div>
+      <ul class="sb-api">
+        <li><code>.field.od-field[data-k]</code><span>Wrapper: label, control, <code>.hint</code>, <code>.err</code> (hidden while empty).</span></li>
+        <li><code>.input</code><span>Text, textarea, select, date. 44px tall, 16px text (no zoom on iOS).</span></li>
+        <li><code>[aria-invalid="true"]</code><span>Error border. Set for you by <code>Splitwise.forms</code>.</span></li>
+        <li><code>.two</code><span>Two fields side by side; stacks below 400px.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================================================== MONEY -->
+    <section class="sb-story" id="money" data-group="Controls" data-title="Money field">
+      <header>
+        <p class="sb-kicker">Controls</p>
+        <h2>Money field</h2>
+        <p class="sb-lead">Amounts are typed as text and parsed into integer minor units (cents) with <code>Splitwise.money.parse</code>. Never use floats for money. The symbol comes from the group currency.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="two">
+          <div class="field od-field" data-k="amount">
+            <label for="sb-amount">Amount</label>
+            <div class="money"><span aria-hidden="true">€</span><input class="input" id="sb-amount" inputmode="decimal" placeholder="0.00"></div>
+            <p class="err"></p>
+          </div>
+          <div class="field od-field" data-k="date">
+            <label for="sb-date">Date</label>
+            <input class="input" type="date" id="sb-date">
+          </div>
+        </div>
+      </div>
+      <div class="sb-example surface">
+        <span class="sb-cap">Splitwise.money — live output</span>
+        <div class="od-grid sb-money" id="sbMoney"></div>
+      </div>
+      <script type="text/plain" data-snippet="JS">
+        const d = Splitwise.money.decimals('EUR');        // 2   (JPY → 0)
+        Splitwise.money.parse('12,5', d);                  // 1250  (or an error string)
+        Splitwise.money.fmt(9552, 'EUR');                  // "€95.52"
+        Splitwise.money.fmtSigned(-2971, 'EUR');           // "−€29.71"
+        Splitwise.money.toInput(1250, d);                  // "12.50" for editing
+      </script>
+    </section>
+
+    <!-- ===================================================== SELECT -->
+    <section class="sb-story" id="select" data-group="Controls" data-title="Select">
+      <header>
+        <p class="sb-kicker">Controls</p>
+        <h2>Select</h2>
+        <p class="sb-lead">Native <code>&lt;select class="input"&gt;</code>: accessible and familiar on every device. Used for payer, payment sender and receiver, currency and the sign-in user list.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="two">
+          <div class="field od-field">
+            <label for="sb-payer">Paid by</label>
+            <select class="input" id="sb-payer"><option>Alice</option><option>Bob</option><option>Carla</option></select>
+          </div>
+          <div class="field od-field">
+            <label for="sb-cur">Currency</label>
+            <select class="input" id="sb-cur"><option>EUR — €</option><option>USD — $</option><option>JPY — ¥</option></select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== CHECKS -->
+    <section class="sb-story" id="checks" data-group="Controls" data-title="Check tiles">
+      <header>
+        <p class="sb-kicker">Controls</p>
+        <h2>Check tiles</h2>
+        <p class="sb-lead">Multi-select as large tiles: the whole tile is the touch target. Used for "Split equally between", with each person's share on the right.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <fieldset class="field od-field" data-k="participants">
+          <div class="legend-row od-row"><legend>Split equally between</legend><button type="button" class="link-btn">Clear all</button></div>
+          <div class="checks od-grid">
+            <label class="check"><input type="checkbox" checked><span class="od-truncate">Alice</span><span class="share num od-nowrap">€3.34</span></label>
+            <label class="check"><input type="checkbox" checked><span class="od-truncate">Bob</span><span class="share num od-nowrap">€3.33</span></label>
+            <label class="check"><input type="checkbox" checked><span class="od-truncate">Carla</span><span class="share num od-nowrap">€3.33</span></label>
+            <label class="check"><input type="checkbox"><span class="od-truncate">Dario</span><span class="share num od-nowrap"></span></label>
+          </div>
+          <p class="hint">3 people · leftover cents go to the earliest members</p>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- ===================================================== SEGMENTED -->
+    <section class="sb-story" id="segmented" data-group="Controls" data-title="Segmented control">
+      <header>
+        <p class="sb-kicker">Controls</p>
+        <h2>Segmented control</h2>
+        <p class="sb-lead">Two to four options where exactly one is active. Built from real radio buttons, so arrow keys work.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <fieldset class="menu-group" style="max-width:320px">
+          <legend>Split mode</legend>
+          <div class="segmented">
+            <label><input type="radio" name="sb-seg" checked><span>Equal</span></label>
+            <label><input type="radio" name="sb-seg"><span>Exact</span></label>
+            <label><input type="radio" name="sb-seg"><span>Percent</span></label>
+          </div>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- ===================================================== SWATCHES -->
+    <section class="sb-story" id="swatches" data-group="Controls" data-title="Swatches">
+      <header>
+        <p class="sb-kicker">Controls</p>
+        <h2>Swatches</h2>
+        <p class="sb-lead">Colour choice as radio dots with 44px targets. Each option has a hidden text name for screen readers, since colour alone can't identify it.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="swatches">
+          <label class="swatch" style="--sw:#0f766e"><input type="radio" name="sb-sw" checked><span class="sr-only">Teal</span></label>
+          <label class="swatch" style="--sw:#1d4ed8"><input type="radio" name="sb-sw"><span class="sr-only">Blue</span></label>
+          <label class="swatch" style="--sw:#be123c"><input type="radio" name="sb-sw"><span class="sr-only">Rose</span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== CHIPS -->
+    <section class="sb-story" id="chips" data-group="Data display" data-title="Chips">
+      <header>
+        <p class="sb-kicker">Data display</p>
+        <h2>Chips</h2>
+        <p class="sb-lead">Short, non-interactive tags: the group currency, "You" on your own row. Keep the text to one or two words.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="od-cluster">
+          <span class="chip">EUR</span>
+          <span class="chip">You</span>
+          <span class="chip accent">v1.0</span>
+          <span class="chip hot">New</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== AVATARS -->
+    <section class="sb-story" id="avatars" data-group="Data display" data-title="Avatars">
+      <header>
+        <p class="sb-kicker">Data display</p>
+        <h2>Avatars</h2>
+        <p class="sb-lead">Initial on a tinted circle; the hue follows join order. Avatars are decorative: the name is always written next to them.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="od-cluster" style="--od-gap:var(--s3)">
+          <span class="avatar sm" style="--h:170" aria-hidden="true">A</span>
+          <span class="avatar" style="--h:237" aria-hidden="true">B</span>
+          <span class="avatar lg" style="--h:304" aria-hidden="true">C</span>
+        </div>
+      </div>
+      <script type="text/plain" data-snippet="JS">
+        Splitwise.avatar('Alice', 0, 'sm');   // index = join order, size '' | 'sm' | 'lg'
+      </script>
+    </section>
+
+    <!-- ===================================================== AMOUNTS -->
+    <section class="sb-story" id="amounts" data-group="Data display" data-title="Amounts">
+      <header>
+        <p class="sb-kicker">Data display</p>
+        <h2>Balance amounts</h2>
+        <p class="sb-lead">Who owes and who is owed is never shown by colour alone: every balance has a sign and a label. Generate it with <code>Splitwise.balance.html(minor, currency)</code>.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="od-cluster" style="--od-gap:var(--s6)">
+          <span class="amt od-stat od-fixed"><span class="num od-nowrap pos">+€95.52</span><span class="amt-label">gets back</span></span>
+          <span class="amt od-stat od-fixed"><span class="num od-nowrap neg">−€29.71</span><span class="amt-label">owes</span></span>
+          <span class="amt od-stat od-fixed"><span class="num od-nowrap muted">€0.00</span><span class="amt-label">settled up</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== STATS -->
+    <section class="sb-story" id="stats" data-group="Data display" data-title="Stats">
+      <header>
+        <p class="sb-kicker">Data display</p>
+        <h2>Stats</h2>
+        <p class="sb-lead">Key figures at the top of a card: numeral above, caption below, each its own block.</p>
+      </header>
+      <div class="sb-example tight" data-code>
+        <div class="card">
+          <div class="stats od-grid">
+            <div class="od-stat"><span class="stat-num num od-nowrap">€452.90</span><span class="stat-cap">Total spent</span></div>
+            <div class="od-stat"><span class="stat-num num">4</span><span class="stat-cap">Expenses</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== BALANCE ROWS -->
+    <section class="sb-story" id="rows" data-group="Data display" data-title="Cards & balance rows">
+      <header>
+        <p class="sb-kicker">Data display</p>
+        <h2>Cards and balance rows</h2>
+        <p class="sb-lead"><code>.card</code> is the only container surface. Inside, <code>ul.rows</code> holds full-width row buttons: lead, a truncating text block, a trailing amount. Each row opens its detail.</p>
+      </header>
+      <div class="sb-example" data-code>
+        <div class="card" style="max-width:400px">
+          <ul class="rows">
+            <li><button class="row-btn" type="button" aria-label="Alice, gets back €95.52. Show details">
+              <span class="avatar" style="--h:170" aria-hidden="true">A</span>
+              <span class="od-fill od-row"><span class="row-title od-truncate">Alice</span><span class="chip od-fixed">You</span></span>
+              <span class="amt od-stat od-fixed"><span class="num od-nowrap pos">+€95.52</span><span class="amt-label">gets back</span></span>
+            </button></li>
+            <li><button class="row-btn" type="button" aria-label="Bob, owes €29.71. Show details">
+              <span class="avatar" style="--h:237" aria-hidden="true">B</span>
+              <span class="od-fill od-row"><span class="row-title od-truncate">Bob</span></span>
+              <span class="amt od-stat od-fixed"><span class="num od-nowrap neg">−€29.71</span><span class="amt-label">owes</span></span>
+            </button></li>
+          </ul>
+          <div class="settle od-row"><p>2 payments settle everyone.</p><button class="btn secondary sm od-fixed" type="button">Settle up</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== ACTIVITY ROWS -->
+    <section class="sb-story" id="activity" data-group="Data display" data-title="Transaction rows & types">
+      <header>
+        <p class="sb-kicker">Data display</p>
+        <h2>Transaction rows and types</h2>
+        <p class="sb-lead">Two transaction types, grouped under day headers, newest first. <strong>Payment</strong>: a member paid for the group, split equally (receipt icon, purple tag). <strong>Internal</strong>: one member paid another to reconcile (orange arrows, orange tag). The type is always written as text, never shown by colour alone.</p>
+      </header>
+      <div class="sb-example" data-code>
+        <div class="card">
+          <div class="day-group">
+            <h3 class="day">16 Oct 2026</h3>
+            <ul class="rows">
+              <li><button class="row-btn" type="button" aria-label="Pastéis de Belém, €10.00, paid by Bob. Edit">
+                <span class="kind-icon" aria-hidden="true"><span data-icon="receipt"></span></span>
+                <span class="od-fill od-stack" style="--od-gap:0">
+                  <span class="od-row"><span class="row-title od-truncate">Pastéis de Belém</span><span class="tag payment od-fixed">Payment</span></span>
+                  <span class="row-meta od-truncate">Bob paid · for everyone (3)</span>
+                </span>
+                <span class="amt od-fixed"><span class="num od-nowrap">€10.00</span></span>
+              </button></li>
+              <li><button class="row-btn" type="button" aria-label="Internal transfer: Bob paid Alice €100.00. Edit">
+                <span class="kind-icon pay" aria-hidden="true"><span data-icon="pay"></span></span>
+                <span class="od-fill od-stack" style="--od-gap:0">
+                  <span class="od-row"><span class="row-title od-truncate">Bob paid Alice</span><span class="tag internal od-fixed">Internal</span></span>
+                  <span class="row-meta od-truncate">Cash after dinner</span>
+                </span>
+                <span class="amt od-fixed"><span class="num od-nowrap">€100.00</span></span>
+              </button></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== VALIDATION -->
+    <section class="sb-story" id="validation" data-group="Feedback" data-title="Form validation">
+      <header>
+        <p class="sb-kicker">Feedback</p>
+        <h2>Form validation</h2>
+        <p class="sb-lead">Fields are checked when you leave them, all at once on submit. With two or more errors an <code>.err-summary</code> appears at the top and links to each field. Try submitting the empty form.</p>
+      </header>
+      <div class="sb-example surface">
+        <form id="sbForm" class="od-stack" style="--od-gap:var(--s4);max-width:440px" novalidate>
+          <div class="err-summary" tabindex="-1" hidden></div>
+          <div class="field od-field" data-k="desc">
+            <label for="sbf-desc">Description</label>
+            <input class="input" id="sbf-desc" name="desc" maxlength="100" aria-describedby="sbf-desc-err">
+            <p class="err" id="sbf-desc-err"></p>
+          </div>
+          <div class="field od-field" data-k="amount">
+            <label for="sbf-amount">Amount</label>
+            <div class="money"><span aria-hidden="true">€</span><input class="input" id="sbf-amount" name="amount" inputmode="decimal" placeholder="0.00" aria-describedby="sbf-amount-err"></div>
+            <p class="err" id="sbf-amount-err"></p>
+          </div>
+          <div class="od-row"><button class="btn primary" type="submit">Save expense</button></div>
+        </form>
+      </div>
+      <script type="text/plain" data-snippet="JS">
+        Splitwise.forms.bind(form, () => {
+          const errs = {};
+          if (!form.desc.value.trim()) errs.desc = 'Add a short description.';
+          const amt = Splitwise.money.parse(form.amount.value, 2);
+          if (typeof amt === 'string') errs.amount = amt;
+          return errs;                      // keys match .field[data-k]
+        }, () => Splitwise.toast('Expense added'));
+
+        Splitwise.forms.reset(form);          // when reopening the form
+      </script>
+    </section>
+
+    <!-- ===================================================== TAGS -->
+    <section class="sb-story" id="tags" data-group="Data display" data-title="Type tags">
+      <header>
+        <p class="sb-kicker">Data display</p>
+        <h2>Transaction type tags</h2>
+        <p class="sb-lead">Small pill next to a row title naming the transaction type. Purple for <code>.payment</code>, orange for <code>.internal</code>; the word carries the meaning.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="od-cluster">
+          <span class="tag payment">Payment</span>
+          <span class="tag internal">Internal</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== GROUP PICKER -->
+    <section class="sb-story" id="picker" data-group="Patterns" data-title="Group list">
+      <header>
+        <p class="sb-kicker">Patterns</p>
+        <h2>Group list</h2>
+        <p class="sb-lead">Home screen: your groups as a filterable list. A search field (name) with the square ＋ create button, an All / You owe / You're owed filter, then one link row per group with your balance. A count under the list is announced to screen readers; no match shows an empty state with Clear filters.</p>
+      </header>
+      <div class="sb-example" data-code>
+        <div class="od-stack" style="--od-gap:var(--s3);max-width:520px">
+          <div class="od-row">
+            <label for="sb-gsearch" class="sr-only">Search groups</label>
+            <input class="input od-fill" type="search" id="sb-gsearch" placeholder="Search groups">
+            <button type="button" class="icon-btn outline od-fixed" aria-label="Create a new group"><span data-icon="plus"></span></button>
+          </div>
+          <fieldset class="menu-group"><legend class="sr-only">Show</legend>
+            <div class="segmented">
+              <label><input type="radio" name="sb-gf" checked><span>All</span></label>
+              <label><input type="radio" name="sb-gf"><span>You owe</span></label>
+              <label><input type="radio" name="sb-gf"><span>You're owed</span></label>
+            </div>
+          </fieldset>
+          <ul class="rows card group-list">
+            <li><a class="row-btn" href="#picker" aria-label="Flat 3B: owes €43.21. Open group">
+              <span class="kind-icon" aria-hidden="true"><span data-icon="users"></span></span>
+              <span class="od-fill od-stack" style="--od-gap:0"><span class="row-title od-truncate">Flat 3B</span><span class="row-meta od-truncate">2 members · 3 transactions · EUR</span></span>
+              <span class="amt od-stat od-fixed"><span class="num od-nowrap neg">−€43.21</span><span class="amt-label">owes</span></span>
+            </a></li>
+            <li><a class="row-btn" href="#picker" aria-label="Lisbon trip: gets back €95.52. Open group">
+              <span class="kind-icon" aria-hidden="true"><span data-icon="users"></span></span>
+              <span class="od-fill od-stack" style="--od-gap:0"><span class="row-title od-truncate">Lisbon trip</span><span class="row-meta od-truncate">3 members · 5 transactions · EUR</span></span>
+              <span class="amt od-stat od-fixed"><span class="num od-nowrap pos">+€95.52</span><span class="amt-label">gets back</span></span>
+            </a></li>
+          </ul>
+          <p class="note">2 of 2 groups</p>
+        </div>
+      </div>
+      <ul class="sb-api">
+        <li><code>ul.rows.card.group-list</code><span>List container; rows are <code>a.row-btn</code> links to <code>group.html?id=…</code>.</span></li>
+        <li><code>.icon-btn.outline</code><span>Bordered 44px icon button that lines up with a <code>.input</code>.</span></li>
+        <li><code>li.empty</code><span>No-match state inside the list, with a Clear filters button.</span></li>
+      </ul>
+    </section>
+      </div>
+      <ul class="sb-api">
+        <li><code>.home / .home-card</code><span>Centred 520px column and its card.</span></li>
+        <li><code>.icon-btn.outline</code><span>Bordered 44px icon button that lines up with a <code>.input</code>.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================================================== INVITE -->
+    <section class="sb-story" id="invite" data-group="Patterns" data-title="Invite code">
+      <header>
+        <p class="sb-kicker">Patterns</p>
+        <h2>Invite code</h2>
+        <p class="sb-lead">Shown in the Invite dialog. Codes avoid look-alike characters (no 0/O, 1/I/L) so they can be read aloud. Pair it with a Copy button.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="od-stack" style="--od-gap:var(--s4);max-width:400px">
+          <div class="code-box" aria-label="Invite code">LIS-7K2Q</div>
+          <button class="btn primary" type="button" onclick="Splitwise.copy('LIS-7K2Q', 'Code LIS-7K2Q copied')"><span data-icon="copy"></span>Copy code</button>
+        </div>
+      </div>
+      <script type="text/plain" data-snippet="JS">
+        Splitwise.copy(group.code, `Code ${group.code} copied`);   // clipboard + toast
+      </script>
+    </section>
+
+    <!-- ===================================================== EMPTY -->
+    <section class="sb-story" id="empty" data-group="Feedback" data-title="Empty state">
+      <header>
+        <p class="sb-kicker">Feedback</p>
+        <h2>Empty state</h2>
+        <p class="sb-lead">Explain why the area is empty and offer the next step. Never a blank card.</p>
+      </header>
+      <div class="sb-example tight" data-code>
+        <div class="card">
+          <div class="empty">
+            <span class="kind-icon"><span data-icon="receipt"></span></span>
+            <h3>No expenses yet</h3>
+            <p>Record what someone paid for the group. It's split equally between everyone by default.</p>
+            <button class="btn primary" type="button">Add payment</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== SETTLED -->
+    <section class="sb-story" id="settled" data-group="Feedback" data-title="Settled badge">
+      <header>
+        <p class="sb-kicker">Feedback</p>
+        <h2>Settled badge</h2>
+        <p class="sb-lead">Success state for a group whose balances are all zero: icon plus text.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <span class="settled"><span data-icon="check"></span>All settled up</span>
+      </div>
+    </section>
+
+    <!-- ===================================================== TOAST -->
+    <section class="sb-story" id="toast" data-group="Feedback" data-title="Toast">
+      <header>
+        <p class="sb-kicker">Feedback</p>
+        <h2>Toast</h2>
+        <p class="sb-lead">Brief confirmation after an action succeeds. Announced to screen readers, hides itself after about 3 seconds. Not for errors: those stay next to the field.</p>
+      </header>
+      <div class="sb-example surface od-row">
+        <button class="btn secondary" type="button" id="sbToastBtn">Show toast</button>
+      </div>
+      <script type="text/plain" data-snippet="JS">
+        Splitwise.toast('Expense added');
+      </script>
+    </section>
+
+    <!-- ===================================================== DIALOG -->
+    <section class="sb-story" id="dialog" data-group="Overlays" data-title="Dialog">
+      <header>
+        <p class="sb-kicker">Overlays</p>
+        <h2>Dialog</h2>
+        <p class="sb-lead">Native <code>&lt;dialog&gt;</code> with a fixed head and foot and a scrolling body. Becomes a bottom sheet below 560px. Closes with Esc, the backdrop, or any <code>[data-close]</code> button.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <button class="btn secondary" type="button" onclick="document.getElementById('sbDialog').showModal()">Open dialog</button>
+        <dialog id="sbDialog" aria-labelledby="sbDialogTitle">
+          <form class="dlg" method="dialog">
+            <header class="dlg-head od-row">
+              <h2 id="sbDialogTitle">Internal transfer</h2>
+              <button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button>
+            </header>
+            <div class="dlg-body">
+              <p class="note">Splitwise only records payments made elsewhere — it never moves money.</p>
+              <div class="field od-field">
+                <label for="sbd-amount">Amount</label>
+                <div class="money"><span aria-hidden="true">€</span><input class="input" id="sbd-amount" inputmode="decimal" placeholder="0.00"></div>
+              </div>
+            </div>
+            <footer class="dlg-foot od-row">
+              <button type="button" class="btn danger">Delete</button>
+              <span class="grow"></span>
+              <button type="button" class="btn secondary" data-close>Cancel</button>
+              <button type="submit" class="btn primary">Save payment</button>
+            </footer>
+          </form>
+        </dialog>
+      </div>
+    </section>
+
+    <!-- ===================================================== CONFIRM -->
+    <section class="sb-story" id="confirm" data-group="Overlays" data-title="Confirm">
+      <header>
+        <p class="sb-kicker">Overlays</p>
+        <h2>Confirm</h2>
+        <p class="sb-lead">Required before anything destructive. The dialog is created for you; focus starts on Cancel so Enter can't delete by accident.</p>
+      </header>
+      <div class="sb-example surface od-row">
+        <button class="btn danger" type="button" id="sbConfirmBtn">Delete expense</button>
+      </div>
+      <script type="text/plain" data-snippet="JS">
+        const ok = await Splitwise.confirm({
+          title: 'Delete this expense?',
+          body: '“Train to Sintra” (€13.50) will be removed and balances recalculated.',
+          ok: 'Delete expense',
+        });
+        if (ok) { /* delete, save, render */ }
+      </script>
+    </section>
+
+    <!-- ===================================================== MENU -->
+    <section class="sb-story" id="menu" data-group="Overlays" data-title="Menu">
+      <header>
+        <p class="sb-kicker">Overlays</p>
+        <h2>Menu</h2>
+        <p class="sb-lead">A small popover built on <code>&lt;details&gt;</code>: works without JS, and the kit closes it on outside click or Esc. Anchored under the trigger's right edge.</p>
+      </header>
+      <div class="sb-example surface od-row" data-code>
+        <details class="menu">
+          <summary class="btn secondary">Group options</summary>
+          <div class="menu-pop">
+            <p class="note">Menu content: short groups of controls or links.</p>
+            <button class="btn ghost sm" type="button"><span data-icon="edit"></span>Rename group</button>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===================================================== APPEARANCE -->
+    <section class="sb-story" id="appearance" data-group="Patterns" data-title="Appearance selector">
+      <header>
+        <p class="sb-kicker">Patterns</p>
+        <h2>Appearance selector</h2>
+        <p class="sb-lead">Theme (light, dark, system) and accent. The choice is saved in the browser and shared by every Splitwise page and open tab. The menu version sits in top bars; the inline version suits settings pages.</p>
+      </header>
+      <div class="sb-row-split">
+        <div class="sb-example surface"><span class="sb-cap">mount(el, { inline: true })</span><div id="sbAppearanceInline"></div></div>
+        <div class="sb-example surface"><span class="sb-cap">mount(el) — menu</span><div class="od-row"><div id="sbAppearanceMenu"></div><span class="note">Open the palette button</span></div></div>
+      </div>
+      <script type="text/plain" data-snippet="JS">
+        Splitwise.appearance.mount(document.getElementById('appearance'));        // menu
+        Splitwise.appearance.mount(el, { inline: true });                          // inline
+        Splitwise.appearance.set({ theme: 'dark', accent: 'blue' });               // programmatic
+        Splitwise.appearance.get();   // { theme: 'system', accent: 'pop', resolved: 'light' }
+        document.addEventListener('splitwise:appearance', e => console.log(e.detail));
+      </script>
+    </section>
+
+    <!-- ===================================================== TOP BAR -->
+    <section class="sb-story" id="topbar" data-group="Patterns" data-title="Top bar">
+      <header>
+        <p class="sb-kicker">Patterns</p>
+        <h2>Top bar</h2>
+        <p class="sb-lead">The same sticky header on every app page, rendered by <code>SplitwiseApp.renderTopbar()</code>: logo (back to Groups), a breadcrumb with the current page marked, the user menu with Sign out, and the appearance picker. On the group page the last crumb shows the group and its currency and opens group settings. Don't hand-write it in pages; this markup is for reference.</p>
+      </header>
+      <div class="sb-example tight sb-frame sb-open" data-code>
+        <header class="topbar">
+          <div class="topbar-in od-row">
+            <a class="brand od-row od-fixed" href="index.html" aria-label="Splitwise — your groups"><span class="brand-mark"><span data-icon="logo"></span></span><span class="brand-name">Splitwise</span></a>
+            <span class="divider od-fixed" aria-hidden="true"></span>
+            <nav class="breadcrumb od-fill" aria-label="Breadcrumb">
+              <ol>
+                <li class="od-fixed"><a href="index.html">Groups</a></li>
+                <li class="od-fill"><button type="button" aria-current="page" aria-label="Lisbon trip, group settings"><span class="od-truncate">Lisbon trip</span><span class="chip od-fixed">EUR</span></button></li>
+              </ol>
+            </nav>
+            <details class="menu user-menu od-fixed">
+              <summary class="user-btn" aria-label="Account: Alice"><span class="avatar sm" style="--h:170" aria-hidden="true">A</span><span class="user-name od-truncate">Alice</span></summary>
+              <div class="menu-pop">
+                <div class="od-row"><span class="avatar" style="--h:170" aria-hidden="true">A</span><div class="od-stat od-fill"><span class="row-title od-truncate">Alice</span><span class="note">Signed in · 2 groups</span></div></div>
+                <button type="button" class="btn secondary block"><span data-icon="logout"></span>Sign out</button>
+              </div>
+            </details>
+          </div>
+        </header>
+      </div>
+      <script type="text/plain" data-snippet="JS">
+        SplitwiseApp.renderTopbar(document.getElementById('topbar'));                         // Groups page
+        SplitwiseApp.renderTopbar(header, { group, onGroupClick: openSettings });             // group page
+      </script>
+      <ul class="sb-api">
+        <li><code>nav.breadcrumb</code><span>Ordered list of crumbs; the current one has <code>aria-current="page"</code>.</span></li>
+        <li><code>details.menu.user-menu</code><span>Account popover with identity and Sign out.</span></li>
+        <li><code>.brand-name</code><span>Hidden below 480px so the breadcrumb keeps its room.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================================================== APP PAGES -->
+    <section class="sb-story" id="pages" data-group="Patterns" data-title="App pages & SplitwiseApp">
+      <header>
+        <p class="sb-kicker">Patterns</p>
+        <h2>App pages and SplitwiseApp</h2>
+        <p class="sb-lead">Each screen is its own page with the same top bar, stylesheet and scripts. Shared data and rules live in <code>assets/splitwise-app.js</code>, so a page script only wires its own screen.</p>
+      </header>
+      <div class="sb-example surface">
+        <ul class="sb-api" style="border-top:0">
+          <li><a href="login.html"><code>login.html</code></a><span>Sign in: user list plus “New user…”. Returns to <code>?next=</code> after sign-in.</span></li>
+          <li><a href="index.html"><code>index.html</code></a><span>Entry point. Your groups: picker with ＋ create, and Join with a code.</span></li>
+          <li><code>group.html?id=…</code><span>One group: members and balances, invite code, Payment and Internal transactions, settle up.</span></li>
+        </ul>
+      </div>
+      <ul class="sb-api">
+        <li><code>requireUser()</code><span>Signed-in user id. Mockup: falls back to the sample user Alice, never redirects.</span></li>
+        <li><code>renderTopbar(el, { group, onGroupClick })</code><span>The shared header above.</span></li>
+        <li><code>state / save()</code><span><code>{ users, groups }</code> in localStorage; call <code>save()</code> after any change.</span></li>
+        <li><code>me() · user(id) · nameOf(id) · avatar(id, size) · addUser(name)</code><span>People helpers.</span></li>
+        <li><code>group(id) · myGroups() · makeCode(name)</code><span>Groups and invite codes.</span></li>
+        <li><code>shares(t, members) · balances(g) · settlePlan(b)</code><span>Money engine in integer cents; balances always sum to zero.</span></li>
+        <li><code>involves(t, id) · hasHistory(g, id) · nameError(n)</code><span>Rules used by filters and forms.</span></li>
+        <li><code>flash(msg) · takeFlash()</code><span>Carry a toast message across a page change.</span></li>
+      </ul>
+    </section>
+
+    <!-- ===================================================== ACTION BAR -->
+    <section class="sb-story" id="actionbar" data-group="Patterns" data-title="Action bar">
+      <header>
+        <p class="sb-kicker">Patterns</p>
+        <h2>Action bar</h2>
+        <p class="sb-lead">Fixed to the bottom on phones (add <code>.mobile-only</code>) so the main actions stay in thumb reach. <code>.layout</code> reserves its height. Shown inline here.</p>
+      </header>
+      <div class="sb-example tight sb-frame" data-code>
+        <nav class="actionbar" aria-label="Quick actions">
+          <button class="btn secondary" type="button">Internal</button>
+          <button class="btn primary" type="button"><span data-icon="plus"></span>Add payment</button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- ===================================================== LOGIN -->
+    <section class="sb-story" id="login" data-group="Patterns" data-title="Login card">
+      <header>
+        <p class="sb-kicker">Patterns</p>
+        <h2>Login card</h2>
+        <p class="sb-lead">The simulated sign-in: pick a member from a dropdown. No password is checked. In the app it fills the screen while signed out.</p>
+      </header>
+      <div class="sb-example tight sb-frame" data-code>
+        <section class="login" aria-labelledby="sb-login-title">
+          <form class="login-card card" novalidate onsubmit="event.preventDefault()">
+            <div class="brand od-row"><span class="brand-mark"><span data-icon="logo"></span></span><span>Splitwise</span></div>
+            <div class="od-stack" style="--od-gap:4px">
+              <h1 id="sb-login-title">Sign in</h1>
+              <p class="muted">Choose your name to open Lisbon trip.</p>
+            </div>
+            <div class="field od-field">
+              <label for="sb-login-user">Who are you?</label>
+              <select class="input" id="sb-login-user"><option value="">Select a member…</option><option>Alice</option><option>Bob</option><option>Carla</option></select>
+            </div>
+            <button class="btn primary block" type="submit">Continue</button>
+            <p class="note">Simulated sign-in: pick any member, no password needed.</p>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <!-- ===================================================== SETTLE -->
+    <section class="sb-story" id="settle" data-group="Patterns" data-title="Settle up">
+      <header>
+        <p class="sb-kicker">Patterns</p>
+        <h2>Settle-up plan</h2>
+        <p class="sb-lead">Suggested payments, each recordable in one click. The amount sits on its own line so it never wraps.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <ul class="plan">
+          <li class="od-row">
+            <div class="od-fill od-stack" style="--od-gap:0">
+              <span class="row-title od-row" style="--od-gap:6px"><span class="od-truncate">Carla</span><span class="arrow" aria-label="pays"><span data-icon="arrow"></span></span><span class="od-truncate">Alice</span></span>
+              <span class="num od-nowrap">€65.81</span>
+            </div>
+            <button class="btn secondary sm od-fixed" type="button">Mark as paid</button>
+          </li>
+          <li class="od-row">
+            <div class="od-fill od-stack" style="--od-gap:0">
+              <span class="row-title od-row" style="--od-gap:6px"><span class="od-truncate">Bob</span><span class="arrow" aria-label="pays"><span data-icon="arrow"></span></span><span class="od-truncate">Alice</span></span>
+              <span class="num od-nowrap">€29.71</span>
+            </div>
+            <button class="btn secondary sm od-fixed" type="button">Mark as paid</button>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================================================== BREAKDOWN -->
+    <section class="sb-story" id="breakdown" data-group="Patterns" data-title="Balance breakdown">
+      <header>
+        <p class="sb-kicker">Patterns</p>
+        <h2>Balance breakdown</h2>
+        <p class="sb-lead">Member detail: every expense and payment behind a balance, ending in a total line, so any number can be explained.</p>
+      </header>
+      <div class="sb-example surface" data-code>
+        <div class="detail-head od-row">
+          <span class="avatar lg" style="--h:237" aria-hidden="true">B</span>
+          <div class="od-stat od-fill"><span class="big-num num od-nowrap neg">−€29.71</span><span class="muted">Bob owes</span></div>
+        </div>
+        <ul class="lines">
+          <li class="od-row"><div class="od-fill od-stack" style="--od-gap:0"><span class="od-truncate row-title">Paid Alice</span><span class="row-meta">17 Oct 2026 · Payment sent</span></div><span class="num od-nowrap od-fixed pos">+€100.00</span></li>
+          <li class="od-row"><div class="od-fill od-stack" style="--od-gap:0"><span class="od-truncate row-title">Train to Sintra</span><span class="row-meta">16 Oct 2026 · Paid €13.50 · share €6.75</span></div><span class="num od-nowrap od-fixed pos">+€6.75</span></li>
+          <li class="od-row total-line"><span class="od-fill">Balance</span><span class="num od-nowrap od-fixed neg">−€29.71</span></li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* Storybook wiring — builds the nav, code snippets and live demos. */
+const { $, esc } = Splitwise;
+
+/* 1. Code snippets: captured BEFORE icons hydrate, so they show the clean
+      <span data-icon> markup you should copy. */
+const dedent = s => {
+  const lines = s.replace(/^\s*\n/, '').replace(/\s+$/, '').split('\n');
+  const ind = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+  return lines.map(l => l.slice(ind)).join('\n');
+};
+const codeBlock = (text, label) => `<details class="sb-code"><summary>${esc(label)}</summary><div class="sb-code-body"><button class="btn ghost sm sb-copy" type="button">Copy</button><pre><code>${esc(text)}</code></pre></div></details>`;
+document.querySelectorAll('.sb-example[data-code]').forEach(ex => {
+  const clone = ex.cloneNode(true);
+  clone.querySelectorAll('.sb-cap').forEach(n => n.remove());
+  ex.insertAdjacentHTML('afterend', codeBlock(dedent(clone.innerHTML.replace(/=""/g, '')), 'HTML'));
+});
+document.querySelectorAll('script[type="text/plain"][data-snippet]').forEach(s => {
+  s.insertAdjacentHTML('afterend', codeBlock(dedent(s.textContent.replace(/<\\\//g, '</')), s.dataset.snippet));
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('.sb-copy');
+  if (!b) return;
+  navigator.clipboard?.writeText(b.nextElementSibling.textContent)
+    .then(() => Splitwise.toast('Copied to clipboard'), () => Splitwise.toast('Copy blocked by the browser — select the code instead'));
+});
+
+/* 2. Navigation, grouped by data-group, with scroll-spy. */
+const groups = new Map();
+document.querySelectorAll('.sb-story').forEach(s => {
+  (groups.get(s.dataset.group) || groups.set(s.dataset.group, []).get(s.dataset.group)).push(s);
+});
+$('#sbNav').innerHTML = [...groups].map(([g, list]) =>
+  `<h2>${esc(g)}</h2><ul>${list.map(s => `<li><a href="#${s.id}">${esc(s.dataset.title)}</a></li>`).join('')}</ul>`).join('');
+const navLinks = [...document.querySelectorAll('#sbNav a')];
+const mobileNav = matchMedia('(max-width: 899px)');
+const spy = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (!en.isIntersecting) return;
+    navLinks.forEach(a => a.removeAttribute('aria-current'));
+    const cur = navLinks.find(a => a.hash === '#' + en.target.id);
+    if (!cur) return;
+    cur.setAttribute('aria-current', 'true');
+    if (mobileNav.matches) $('#sbNav').scrollTo({ left: cur.offsetLeft - 16 }); // keep the active tab visible in the rail
+  });
+}, { rootMargin: '-30% 0px -65% 0px' });
+document.querySelectorAll('.sb-story').forEach(s => spy.observe(s));
+
+/* 3. Live foundations. */
+$('#sbVersion').textContent = 'v' + Splitwise.version;
+const TOKENS = ['bg', 'surface', 'surface-2', 'border', 'border-strong', 'text', 'muted', 'subtle', 'accent', 'accent-hover', 'accent-fg', 'accent-soft', 'accent-2', 'accent-2-fg', 'accent-2-soft', 'accent-2-ink', 'pos', 'neg', 'danger', 'danger-soft'];
+function renderColours() {
+  const cs = getComputedStyle(document.documentElement);
+  $('#sbColours').innerHTML = `<div class="od-grid sb-tokens">${TOKENS.map(t =>
+    `<div class="sb-token"><i style="--tok:var(--${t})"></i><b>--${t}</b><span>${cs.getPropertyValue('--' + t).trim()}</span></div>`).join('')}</div>`;
+}
+renderColours();
+document.addEventListener('splitwise:appearance', renderColours);
+
+$('#sbIcons').innerHTML = Splitwise.icons.map(n => `<div>${Splitwise.icon(n)}<span>${n}</span></div>`).join('');
+
+const M = Splitwise.money;
+$('#sbMoney').innerHTML = [['EUR', 1000], ['USD', 9552], ['GBP', -2971], ['JPY', 1500]].map(([c, v]) =>
+  `<div class="od-stat sb-demo-box"><span class="num od-nowrap">${M.fmtSigned(v, c)}</span><span class="sb-cap">${c} · ${M.decimals(c)} decimals</span></div>`).join('');
+
+$('#sbMotionBtn').onclick = e => {
+  const on = $('#sbMotionBox').classList.toggle('on');
+  e.currentTarget.setAttribute('aria-pressed', on);
+};
+
+/* 4. Interactive controls. */
+$('#sbLoadingBtn').onclick = e => {
+  const b = e.currentTarget;
+  b.setAttribute('aria-busy', 'true');
+  setTimeout(() => { b.removeAttribute('aria-busy'); Splitwise.toast('Saved'); }, 1200);
+};
+const form = $('#sbForm');
+Splitwise.forms.bind(form, () => {
+  const errs = {};
+  if (!form.desc.value.trim()) errs.desc = 'Add a short description.';
+  const amt = M.parse(form.amount.value, 2);
+  if (typeof amt === 'string') errs.amount = amt;
+  return errs;
+}, () => { Splitwise.toast('Expense added'); form.reset(); Splitwise.forms.reset(form); });
+$('#sbToastBtn').onclick = () => Splitwise.toast('Expense added');
+$('#sbConfirmBtn').onclick = async () => {
+  const ok = await Splitwise.confirm({ title: 'Delete this expense?', body: '“Train to Sintra” (€13.50) will be removed and balances recalculated.', ok: 'Delete expense' });
+  Splitwise.toast(ok ? 'Expense deleted' : 'Kept the expense');
+};
+
+/* 5. Appearance selectors. */
+Splitwise.appearance.mount($('#sbAppearance'));
+Splitwise.appearance.mount($('#sbAppearanceMenu'));
+Splitwise.appearance.mount($('#sbAppearanceInline'), { inline: true });
+</script>
+</body>
+</html>

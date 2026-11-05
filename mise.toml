@@ -1,0 +1,84 @@
+# Splitwise Lite tools and tasks. `mise install` sets up Python and uv.
+# `mise tasks` lists the tasks. `mise run <task> [args]` runs one.
+
+[tools]
+python = "3.13"
+uv = "latest"
+
+[env]
+# uv uses the Python that mise installs. It does not download a second one.
+UV_PYTHON_PREFERENCE = "only-system"
+UV_PYTHON_DOWNLOADS = "never"
+
+# ── Agent reading (_tools/digest.py, reference: _docs/_meta/tools.md) ──
+
+[tasks.digest]
+description = "Read many files at once with a size budget. --summary to peek"
+run = "uv run _tools/digest.py"
+quiet = true
+
+# ── Documentation (_tools/docs.py, reference: _docs/_meta/tools.md) ──
+
+[tasks.docs-lint]
+description = "Run the mechanical checks L1 L2 L4 L5 L7 L9 L10 L11"
+run = "uv run _tools/docs.py lint"
+
+[tasks.docs-index]
+description = "Regenerate the catalogue in _docs/Home.md"
+run = "uv run _tools/docs.py index"
+
+[tasks.docs-index-check]
+description = "Fail if the catalogue is out of date (no write)"
+run = "uv run _tools/docs.py index-check"
+
+[tasks.docs-new]
+description = "Scaffold a document: mise run docs-new <kind> <slug>"
+run = "uv run _tools/docs.py new"
+
+[tasks.docs-touched]
+description = "List the documents that anchor the changed files"
+run = "uv run _tools/docs.py touched"
+
+[tasks.docs-stats]
+description = "Show library counts and health"
+run = "uv run _tools/docs.py stats"
+
+[tasks.docs-changed]
+description = "List documents whose file moved after their updated date (L11). Arg: days, default 2"
+run = "uv run _tools/docs.py changed"
+
+[tasks.docs-drift]
+description = "List documents whose anchored sources moved after verified (L3)"
+run = "uv run _tools/docs.py drift"
+
+[tasks.docs-review]
+description = "List documents past their review_cycle"
+run = "uv run _tools/docs.py review"
+
+[tasks.docs-stamp]
+description = "Repair the updated date of documents L11 flags"
+run = "uv run _tools/docs.py stamp"
+
+[tasks.docs-stamp-check]
+description = "Show the stamp plan (no write)"
+run = "uv run _tools/docs.py stamp-check"
+
+[tasks.docs-verify]
+description = "Record that you checked the named documents: mise run docs-verify <paths>"
+run = "uv run _tools/docs.py verify"
+
+[tasks.docs-log]
+description = "Append one row to _docs/_meta/review-log.md"
+run = "uv run _tools/docs.py log"
+
+[tasks.docs-inbox]
+description = "Show the inbox filing queue"
+run = "uv run _tools/docs.py inbox"
+
+[tasks.docs-graph]
+description = "Show the depends_on graph"
+run = "uv run _tools/docs.py graph"
+
+[tasks.docs-sync]
+description = "Regenerate the index, then stamp dates"
+run = "uv run _tools/docs.py sync"

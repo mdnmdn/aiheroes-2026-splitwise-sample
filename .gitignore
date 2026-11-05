@@ -1,0 +1,14 @@
+# Local dev data (database and similar)
+_data/*
+!_data/.gitignore
+
+# Scratch space and temporary reference samples
+tmp/
+refs/
+
+# Tooling
+.venv/
+__pycache__/
+.DS_Store
+.obsidian/workspace*.json
+mise.local.toml

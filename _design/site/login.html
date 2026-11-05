@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in — Splitwise</title>
+<link rel="stylesheet" href="assets/splitwise.css">
+<script src="assets/splitwise.js"></script>
+<script src="assets/splitwise-app.js"></script>
+</head>
+<body>
+<noscript><p class="noscript-banner">This prototype needs JavaScript. The preview has scripts turned off, so the theme picker, sign-in and buttons can't work here — open the file in a browser instead.</p></noscript>
+<script>/* script-health check: tells you if the shared scripts didn't load */
+window.addEventListener('DOMContentLoaded', function () { if (!window.Splitwise || (true && !window.SplitwiseApp)) document.body.insertAdjacentHTML('afterbegin', '<p class="noscript-banner">The shared scripts in assets/ didn’t load, so theme switching and buttons won’t work. Check that the assets folder sits next to this page.</p>'); });</script>
+<!-- Page: sign in. Components: Login card, Field, Select, Button (storybook → Patterns). -->
+<main class="login" id="main" aria-labelledby="loginTitle">
+  <form class="login-card card" id="loginForm" novalidate>
+    <div class="od-row" style="justify-content:space-between">
+      <div class="brand od-row"><span class="brand-mark"><span data-icon="logo"></span></span><span>Splitwise</span></div>
+      <div id="appearance"></div>
+    </div>
+    <div class="od-stack" style="--od-gap:4px">
+      <h1 id="loginTitle">Sign in</h1>
+      <p class="muted">Choose your name, or add yourself as a new user.</p>
+    </div>
+    <div class="err-summary" tabindex="-1" hidden></div>
+    <div class="field od-field" data-k="user">
+      <label for="loginUser">Who are you?</label>
+      <select class="input" id="loginUser" name="user" aria-describedby="loginUserErr"></select>
+      <p class="err" id="loginUserErr"></p>
+    </div>
+    <div class="field od-field" data-k="name" id="loginNew" hidden>
+      <label for="loginName">Your name</label>
+      <input class="input" id="loginName" name="newname" maxlength="30" autocomplete="off" aria-describedby="loginNameHint loginNameErr">
+      <p class="hint" id="loginNameHint">Up to 30 characters. You'll be added as a new user.</p>
+      <p class="err" id="loginNameErr"></p>
+    </div>
+    <button class="btn primary block" type="submit">Continue</button>
+    <p class="note">Simulated sign-in: no password needed.</p>
+  </form>
+</main>
+
+<script>
+const App = SplitwiseApp, F = Splitwise.forms;
+const NEW = '__new';
+const next = App.safeNext(new URLSearchParams(location.search).get('next'));
+const form = document.getElementById('loginForm');
+const toggle = () => { document.getElementById('loginNew').hidden = form.user.value !== NEW; };
+const users = App.state.users;
+form.user.innerHTML = (users.length ? '<option value="">Select your name…</option>' : '') +
+  users.map(u => `<option value="${u.id}">${Splitwise.esc(u.name)}</option>`).join('') + `<option value="${NEW}">New user…</option>`;
+if (!users.length) form.user.value = NEW;
+toggle();
+form.user.addEventListener('change', () => { toggle(); if (form.user.value === NEW) form.newname.focus(); });
+
+F.bind(form, () => {
+  const errs = {};
+  if (form.user.value === NEW) { const e = App.nameError(form.newname.value.trim()); if (e) errs.name = e; }
+  else if (!App.user(form.user.value)) errs.user = 'Choose your name, or pick “New user…”.';
+  return errs;
+}, () => {
+  let id = form.user.value;
+  if (id === NEW) { id = App.addUser(form.newname.value.trim()); App.save(); }
+  App.signIn(id);
+  App.flash(`Signed in as ${App.nameOf(id)}`);
+  location.href = next;
+});
+Splitwise.appearance.mount(document.getElementById('appearance'));
+form.user.focus();
+</script>
+</body>
+</html>

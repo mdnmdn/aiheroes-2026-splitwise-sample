@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Group — Splitwise</title>
+<link rel="stylesheet" href="assets/splitwise.css">
+<script src="assets/splitwise.js"></script>
+<script src="assets/splitwise-app.js"></script>
+<style>
+/* Page-only: the All/Mine toolbar above the transaction list. */
+.tx-tools { justify-content: space-between; padding: var(--s3) var(--s4); border-bottom: 1px solid var(--border); }
+.tx-tools .segmented { width: 200px; }
+</style>
+</head>
+<body>
+<noscript><p class="noscript-banner">This prototype needs JavaScript. The preview has scripts turned off, so the theme picker, sign-in and buttons can't work here — open the file in a browser instead.</p></noscript>
+<script>/* script-health check: tells you if the shared scripts didn't load */
+window.addEventListener('DOMContentLoaded', function () { if (!window.Splitwise || (true && !window.SplitwiseApp)) document.body.insertAdjacentHTML('afterbegin', '<p class="noscript-banner">The shared scripts in assets/ didn’t load, so theme switching and buttons won’t work. Check that the assets folder sits next to this page.</p>'); });</script>
+<!-- Page: one group (group.html?id=…). Components: App top bar, Stats, Balance rows,
+     Transaction rows & type tags, Segmented, Dialogs, Invite code, Settle-up plan,
+     Balance breakdown, Action bar (storybook). -->
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar" id="topbar"></header>
+
+<main class="layout" id="main">
+  <section class="sticky-side" aria-labelledby="memTitle">
+    <div class="panel-head od-row">
+      <h2 id="memTitle">Members</h2>
+      <div class="head-actions od-row">
+        <button class="btn ghost sm" data-act="member"><span data-icon="plus"></span>Add</button>
+        <button class="btn secondary sm" data-act="invite"><span data-icon="users"></span>Invite</button>
+      </div>
+    </div>
+    <div class="card" id="balCard"></div>
+  </section>
+
+  <section aria-labelledby="txTitle">
+    <div class="panel-head od-row">
+      <h2 id="txTitle">Transactions</h2>
+      <div class="head-actions od-row desktop-only">
+        <button class="btn secondary" data-act="internal">Internal transfer</button>
+        <button class="btn primary" data-act="payment"><span data-icon="plus"></span>Add payment</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tx-tools od-row">
+        <fieldset class="menu-group"><legend class="sr-only">Show</legend>
+          <div class="segmented">
+            <label><input type="radio" name="txFilter" value="all" checked><span>All</span></label>
+            <label><input type="radio" name="txFilter" value="mine"><span>Mine</span></label>
+          </div>
+        </fieldset>
+        <span class="note od-nowrap" id="txCount"></span>
+      </div>
+      <div id="txList"></div>
+    </div>
+  </section>
+</main>
+
+<nav class="actionbar mobile-only" aria-label="Quick actions">
+  <button class="btn secondary" data-act="internal">Internal</button>
+  <button class="btn primary" data-act="payment"><span data-icon="plus"></span>Add payment</button>
+</nav>
+
+<!-- Payment: someone paid for the group, split equally -->
+<dialog id="payDlg" aria-labelledby="payTitle">
+  <form class="dlg" id="payForm" novalidate>
+    <header class="dlg-head od-row"><h2 id="payTitle">Add payment</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></header>
+    <div class="dlg-body">
+      <div class="err-summary" tabindex="-1" hidden></div>
+      <div class="field od-field" data-k="desc">
+        <label for="payDesc">Description</label>
+        <input class="input" id="payDesc" name="desc" maxlength="100" autocomplete="off" placeholder="e.g. Groceries at Pingo Doce" aria-describedby="payDescErr">
+        <p class="err" id="payDescErr"></p>
+      </div>
+      <div class="two">
+        <div class="field od-field" data-k="amount">
+          <label for="payAmount">Amount</label>
+          <div class="money"><span class="cur-sym" aria-hidden="true"></span><input class="input" id="payAmount" name="amount" inputmode="decimal" autocomplete="off" aria-describedby="payAmountErr"></div>
+          <p class="err" id="payAmountErr"></p>
+        </div>
+        <div class="field od-field" data-k="date">
+          <label for="payDate">Date</label>
+          <input class="input" type="date" id="payDate" name="date" aria-describedby="payDateErr">
+          <p class="err" id="payDateErr"></p>
+        </div>
+      </div>
+      <div class="field od-field" data-k="payer">
+        <label for="payPayer">Paid by</label>
+        <select class="input" id="payPayer" name="payer"></select>
+        <p class="err"></p>
+      </div>
+      <fieldset class="field od-field" data-k="participants" aria-describedby="payPartsErr payPreview">
+        <div class="legend-row od-row"><legend>Split equally between</legend><button type="button" class="link-btn" id="payToggleAll">Select all</button></div>
+        <div class="checks od-grid" id="payParts"></div>
+        <p class="hint" id="payPreview"></p>
+        <p class="err" id="payPartsErr"></p>
+      </fieldset>
+    </div>
+    <footer class="dlg-foot od-row">
+      <button type="button" class="btn danger" id="payDelete">Delete</button>
+      <span class="grow"></span>
+      <button type="button" class="btn secondary" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Save payment</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Internal: user-to-user reconciliation -->
+<dialog id="intDlg" aria-labelledby="intTitle">
+  <form class="dlg" id="intForm" novalidate>
+    <header class="dlg-head od-row"><h2 id="intTitle">Internal transfer</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></header>
+    <div class="dlg-body">
+      <div class="err-summary" tabindex="-1" hidden></div>
+      <p class="note">Records money one member gave another to settle up. Splitwise never moves money itself.</p>
+      <div class="two">
+        <div class="field od-field" data-k="from">
+          <label for="intFrom">From</label>
+          <select class="input" id="intFrom" name="from"></select>
+          <p class="err"></p>
+        </div>
+        <div class="field od-field" data-k="to">
+          <label for="intTo">To</label>
+          <select class="input" id="intTo" name="to" aria-describedby="intToErr"></select>
+          <p class="err" id="intToErr"></p>
+        </div>
+      </div>
+      <div class="two">
+        <div class="field od-field" data-k="amount">
+          <label for="intAmount">Amount</label>
+          <div class="money"><span class="cur-sym" aria-hidden="true"></span><input class="input" id="intAmount" name="amount" inputmode="decimal" autocomplete="off" aria-describedby="intAmountErr"></div>
+          <p class="err" id="intAmountErr"></p>
+        </div>
+        <div class="field od-field" data-k="date">
+          <label for="intDate">Date</label>
+          <input class="input" type="date" id="intDate" name="date" aria-describedby="intDateErr">
+          <p class="err" id="intDateErr"></p>
+        </div>
+      </div>
+      <div class="field od-field" data-k="note">
+        <label for="intNote">Note <span class="subtle">(optional)</span></label>
+        <input class="input" id="intNote" name="note" maxlength="100" autocomplete="off" placeholder="e.g. Bank transfer" aria-describedby="intNoteErr">
+        <p class="err" id="intNoteErr"></p>
+      </div>
+    </div>
+    <footer class="dlg-foot od-row">
+      <button type="button" class="btn danger" id="intDelete">Delete</button>
+      <span class="grow"></span>
+      <button type="button" class="btn secondary" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Save transfer</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Member: add to group (existing or new user) / rename user -->
+<dialog id="memDlg" aria-labelledby="memDlgTitle">
+  <form class="dlg" id="memForm" novalidate>
+    <header class="dlg-head od-row"><h2 id="memDlgTitle">Add member</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></header>
+    <div class="dlg-body">
+      <div class="err-summary" tabindex="-1" hidden></div>
+      <div class="field od-field" data-k="user" id="memPick">
+        <label for="memUser">Person</label>
+        <select class="input" id="memUser" name="user" aria-describedby="memUserErr"></select>
+        <p class="err" id="memUserErr"></p>
+      </div>
+      <div class="field od-field" data-k="name" id="memNew">
+        <label for="memName">Name</label>
+        <input class="input" id="memName" name="name" maxlength="30" autocomplete="off" aria-describedby="memNameErr">
+        <p class="err" id="memNameErr"></p>
+      </div>
+      <p class="note" id="memNote">To let someone join on their own, share the group's invite code instead.</p>
+    </div>
+    <footer class="dlg-foot od-row">
+      <button type="button" class="btn secondary" data-close>Cancel</button>
+      <button type="submit" class="btn primary" id="memSubmit">Add member</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Member detail: balance breakdown -->
+<dialog id="detailDlg" aria-labelledby="detTitle">
+  <div class="dlg">
+    <header class="dlg-head od-row"><h2 id="detTitle">Member</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></header>
+    <div class="dlg-body" id="detBody"></div>
+    <footer class="dlg-foot od-row">
+      <button type="button" class="btn danger" id="detRemove">Remove from group</button>
+      <span class="grow"></span>
+      <button type="button" class="btn secondary" id="detRename">Rename</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- Invite code -->
+<dialog id="inviteDlg" aria-labelledby="invTitle">
+  <div class="dlg">
+    <header class="dlg-head od-row"><h2 id="invTitle">Invite to group</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></header>
+    <div class="dlg-body">
+      <p class="muted" id="invText"></p>
+      <div class="code-box" id="invCode" aria-label="Invite code"></div>
+      <p class="note">They sign in, then enter it under <strong>Join with a code</strong> on the Groups page.</p>
+    </div>
+    <footer class="dlg-foot od-row">
+      <button type="button" class="btn secondary" data-close>Done</button>
+      <button type="button" class="btn primary" id="invCopy"><span data-icon="copy"></span>Copy code</button>
+    </footer>
+  </div>
+</dialog>
+
+<!-- Settle up -->
+<dialog id="settleDlg" aria-labelledby="setTitle">
+  <div class="dlg">
+    <header class="dlg-head od-row"><h2 id="setTitle">Settle up</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></header>
+    <div class="dlg-body" id="setBody"></div>
+    <footer class="dlg-foot od-row"><button type="button" class="btn secondary" data-close>Done</button></footer>
+  </div>
+</dialog>
+
+<!-- Group settings: rename -->
+<dialog id="groupDlg" aria-labelledby="grpTitle">
+  <form class="dlg" id="groupForm" novalidate>
+    <header class="dlg-head od-row"><h2 id="grpTitle">Group settings</h2><button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></header>
+    <div class="dlg-body">
+      <div class="err-summary" tabindex="-1" hidden></div>
+      <div class="field od-field" data-k="name">
+        <label for="grpName">Group name</label>
+        <input class="input" id="grpName" name="name" maxlength="50" autocomplete="off" aria-describedby="grpNameErr">
+        <p class="err" id="grpNameErr"></p>
+      </div>
+      <div class="field od-field">
+        <label for="grpCur">Currency</label>
+        <input class="input" id="grpCur" disabled aria-describedby="grpCurHint">
+        <p class="hint" id="grpCurHint">The currency can’t be changed after the group is created.</p>
+      </div>
+    </div>
+    <footer class="dlg-foot od-row">
+      <button type="button" class="btn secondary" data-close>Cancel</button>
+      <button type="submit" class="btn primary">Save</button>
+    </footer>
+  </form>
+</dialog>
+
+<script>
+const App = SplitwiseApp, M = Splitwise.money, F = Splitwise.forms, I = Splitwise.icon;
+const { $, esc, uid, todayISO, fmtDate, toast } = Splitwise;
+const NEW = '__new';
+const me = App.requireUser();
+const cur = me && App.group(new URLSearchParams(location.search).get('id'));
+if (me && !(cur && cur.members.includes(me))) {
+  App.flash('That group isn’t available to you.');
+  location.replace('index.html');
+}
+
+/* ---------- helpers ---------- */
+const nameOf = App.nameOf, avatar = App.avatar;
+const fmt = v => M.fmt(v, cur.currency);
+const fmtSigned = v => M.fmtSigned(v, cur.currency);
+const balLabel = Splitwise.balance.label, balClass = Splitwise.balance.cls;
+const byNewest = (a, b) => b.date.localeCompare(a.date) || b.created - a.created;
+const validDate = v => !v ? 'Pick a date.' : v > todayISO() ? 'Date can’t be in the future.' : null;
+const userOptions = (ids, sel) => ids.map(id => `<option value="${id}"${id === sel ? ' selected' : ''}>${esc(nameOf(id))}</option>`).join('');
+function clean(errs) { for (const k in errs) if (!errs[k]) delete errs[k]; return errs; }
+function commit(msg) { App.save(); render(); if (msg) toast(msg); }
+let txFilter = 'all';
+
+/* ---------- render ---------- */
+function render() {
+  const g = cur;
+  document.title = `${g.name} — Splitwise`;
+  document.querySelectorAll('.cur-sym').forEach(el => el.textContent = M.symbol(g.currency));
+  const b = App.balances(g), plan = App.settlePlan(b);
+  const spent = g.tx.filter(t => t.type === 'payment').reduce((a, t) => a + t.amount, 0);
+
+  $('#balCard').innerHTML = `
+    <div class="stats od-grid">
+      <div class="od-stat"><span class="stat-num num od-nowrap">${fmt(spent)}</span><span class="stat-cap">Total paid for the group</span></div>
+      <div class="od-stat"><span class="stat-num num od-nowrap">${fmtSigned(b.get(me))}</span><span class="stat-cap">Your balance · ${balLabel(b.get(me))}</span></div>
+    </div>
+    <ul class="rows">${g.members.map(id => { const v = b.get(id); return `
+      <li><button class="row-btn" data-member="${id}" aria-label="${esc(nameOf(id))}, ${balLabel(v)} ${v ? fmt(Math.abs(v)) : ''}. Show details">
+        ${avatar(id)}
+        <span class="od-fill od-row"><span class="row-title od-truncate">${esc(nameOf(id))}</span>${id === me ? '<span class="chip hot od-fixed">You</span>' : ''}</span>
+        ${Splitwise.balance.html(v, g.currency)}
+      </button></li>`; }).join('')}
+    </ul>
+    <div class="settle od-row">${!plan.length
+      ? (g.tx.length ? `<span class="settled">${I('check')}All settled up</span>` : `<p>Add a payment to see who owes whom.</p>`)
+      : `<p>${plan.length} ${plan.length === 1 ? 'transfer settles' : 'transfers settle'} everyone.</p><button class="btn secondary sm od-fixed" data-act="settle">Settle up</button>`}
+    </div>`;
+
+  const list = g.tx.filter(t => txFilter === 'all' || App.involves(t, me)).sort(byNewest);
+  $('#txCount').textContent = `${list.length} of ${g.tx.length}`;
+  if (!list.length) {
+    $('#txList').innerHTML = txFilter === 'mine' && g.tx.length
+      ? `<div class="empty"><h3>Nothing involves you yet</h3><p>Payments you made or share in, and transfers to or from you, will show here.</p></div>`
+      : `<div class="empty"><span class="kind-icon">${I('receipt')}</span><h3>No transactions yet</h3><p>Add what someone paid for the group. It's split equally between the members you choose.</p><button class="btn primary" data-act="payment">${I('plus')}Add payment</button></div>`;
+    return;
+  }
+  const days = new Map();
+  for (const t of list) (days.get(t.date) || days.set(t.date, []).get(t.date)).push(t);
+  $('#txList').innerHTML = [...days].map(([date, ts]) => `
+    <div class="day-group"><h3 class="day">${fmtDate(date)}</h3><ul class="rows">${ts.map(txRow).join('')}</ul></div>`).join('');
+}
+function txRow(t) {
+  if (t.type === 'payment') {
+    const who = t.participants.length === cur.members.length ? `everyone (${t.participants.length})` : t.participants.map(nameOf).join(', ');
+    return `<li><button class="row-btn" data-tx="${t.id}" aria-label="Payment: ${esc(t.desc)}, ${fmt(t.amount)}, paid by ${esc(nameOf(t.payer))}. Edit">
+      <span class="kind-icon" aria-hidden="true">${I('receipt')}</span>
+      <span class="od-fill od-stack" style="--od-gap:0">
+        <span class="od-row"><span class="row-title od-truncate">${esc(t.desc)}</span><span class="tag payment od-fixed">Payment</span></span>
+        <span class="row-meta od-truncate">${esc(nameOf(t.payer))} paid · for ${esc(who)}</span>
+      </span>
+      <span class="amt od-fixed"><span class="num od-nowrap">${fmt(t.amount)}</span></span>
+    </button></li>`;
+  }
+  return `<li><button class="row-btn" data-tx="${t.id}" aria-label="Internal transfer: ${esc(nameOf(t.from))} paid ${esc(nameOf(t.to))} ${fmt(t.amount)}. Edit">
+    <span class="kind-icon pay" aria-hidden="true">${I('pay')}</span>
+    <span class="od-fill od-stack" style="--od-gap:0">
+      <span class="od-row"><span class="row-title od-truncate">${esc(nameOf(t.from))} paid ${esc(nameOf(t.to))}</span><span class="tag internal od-fixed">Internal</span></span>
+      <span class="row-meta od-truncate">${t.note ? esc(t.note) : 'Reconciliation'}</span>
+    </span>
+    <span class="amt od-fixed"><span class="num od-nowrap">${fmt(t.amount)}</span></span>
+  </button></li>`;
+}
+
+/* ---------- group settings (opened from the breadcrumb) ---------- */
+const grpForm = $('#groupForm');
+function openSettings() {
+  grpForm.name.value = cur.name; grpForm.querySelector('#grpCur').value = `${cur.currency} — ${M.symbol(cur.currency)}`;
+  F.reset(grpForm); $('#groupDlg').showModal(); grpForm.name.focus();
+}
+F.bind(grpForm, () => {
+  const n = grpForm.name.value.trim();
+  return n ? n.length > 50 ? { name: 'Keep it under 50 characters.' } : {} : { name: 'Give the group a name.' };
+}, () => { cur.name = grpForm.name.value.trim(); $('#groupDlg').close(); commit('Group updated'); topbar(); });
+const topbar = () => App.renderTopbar($('#topbar'), { group: cur, onGroupClick: openSettings });
+
+/* ---------- invite ---------- */
+function openInvite() {
+  $('#invText').textContent = `Share this code to invite people to ${cur.name}.`;
+  $('#invCode').textContent = cur.code;
+  $('#inviteDlg').showModal(); $('#invCopy').focus();
+}
+$('#invCopy').onclick = () => Splitwise.copy(cur.code, `Code ${cur.code} copied`);
+
+/* ---------- payment ---------- */
+const payForm = $('#payForm');
+let payEditing = null;
+const payChecked = () => [...payForm.querySelectorAll('input[name=p]:checked')].map(i => i.value);
+function payPreview() {
+  const ids = payChecked(), amt = M.parse(payForm.amount.value, M.decimals(cur.currency));
+  const sh = typeof amt === 'number' && ids.length ? App.shares({ amount: amt, participants: ids }, cur.members) : new Map();
+  payForm.querySelectorAll('input[name=p]').forEach(i => { i.closest('.check').querySelector('.share').textContent = sh.has(i.value) ? fmt(sh.get(i.value)) : ''; });
+  $('#payToggleAll').textContent = ids.length === cur.members.length ? 'Clear all' : 'Select all';
+  const vals = [...sh.values()], n = `${ids.length} ${ids.length === 1 ? 'person' : 'people'}`;
+  $('#payPreview').textContent = !ids.length ? 'Choose who shares this cost.' : !sh.size ? n
+    : `${n} · ${vals[0] === vals.at(-1) ? fmt(vals[0]) + ' each' : 'leftover cents go to the earliest members'}`;
+}
+function openPayment(id) {
+  const t = cur.tx.find(x => x.id === id);
+  payEditing = t || null;
+  const d = M.decimals(cur.currency);
+  $('#payTitle').textContent = t ? 'Edit payment' : 'Add payment';
+  $('#payDelete').hidden = !t;
+  payForm.desc.value = t?.desc ?? '';
+  payForm.amount.value = t ? M.toInput(t.amount, d) : '';
+  payForm.amount.placeholder = M.toInput(0, d);
+  payForm.date.value = t?.date ?? todayISO(); payForm.date.max = todayISO();
+  payForm.payer.innerHTML = userOptions(cur.members, t?.payer ?? me);
+  const parts = t?.participants ?? cur.members;
+  $('#payParts').innerHTML = cur.members.map(id => `<label class="check"><input type="checkbox" name="p" value="${id}"${parts.includes(id) ? ' checked' : ''}><span class="od-truncate">${esc(nameOf(id))}</span><span class="share num od-nowrap"></span></label>`).join('');
+  F.reset(payForm); payPreview();
+  $('#payDlg').showModal(); payForm.desc.focus();
+}
+const payValidate = () => {
+  const desc = payForm.desc.value.trim(), amt = M.parse(payForm.amount.value, M.decimals(cur.currency));
+  return clean({
+    desc: !desc ? 'Add a short description.' : desc.length > 100 ? 'Keep it under 100 characters.' : null,
+    amount: typeof amt === 'string' ? amt : null,
+    date: validDate(payForm.date.value),
+    payer: cur.members.includes(payForm.payer.value) ? null : 'Choose who paid.',
+    participants: payChecked().length ? null : 'Pick at least one person to split with.',
+  });
+};
+F.bind(payForm, payValidate, () => {
+  const data = { desc: payForm.desc.value.trim(), amount: M.parse(payForm.amount.value, M.decimals(cur.currency)), date: payForm.date.value, payer: payForm.payer.value, participants: payChecked() };
+  if (payEditing) Object.assign(payEditing, data); else cur.tx.push({ id: uid(), type: 'payment', created: Date.now(), ...data });
+  $('#payDlg').close(); commit(payEditing ? 'Payment updated' : 'Payment added');
+});
+payForm.addEventListener('input', payPreview);
+payForm.addEventListener('change', payPreview);
+$('#payToggleAll').onclick = () => {
+  const all = payChecked().length === cur.members.length;
+  payForm.querySelectorAll('input[name=p]').forEach(i => i.checked = !all);
+  payForm._touched.add('participants'); payPreview(); F.paint(payForm, payValidate());
+};
+$('#payDelete').onclick = async () => {
+  if (!await Splitwise.confirm({ title: 'Delete this payment?', body: `“${payEditing.desc}” (${fmt(payEditing.amount)}) will be removed and balances recalculated.`, ok: 'Delete payment' })) return;
+  cur.tx = cur.tx.filter(x => x !== payEditing); $('#payDlg').close(); commit('Payment deleted');
+};
+
+/* ---------- internal transfer ---------- */
+const intForm = $('#intForm');
+let intEditing = null;
+function openInternal(id) {
+  if (cur.members.length < 2) { toast('Invite at least one more member first.'); return openInvite(); }
+  const t = cur.tx.find(x => x.id === id);
+  intEditing = t || null;
+  const d = M.decimals(cur.currency), src = t || {};
+  $('#intTitle').textContent = t ? 'Edit internal transfer' : 'Internal transfer';
+  $('#intDelete').hidden = !t;
+  const from = src.from ?? me;
+  intForm.from.innerHTML = userOptions(cur.members, from);
+  intForm.to.innerHTML = userOptions(cur.members, src.to ?? cur.members.find(x => x !== from));
+  intForm.amount.value = src.amount ? M.toInput(src.amount, d) : '';
+  intForm.amount.placeholder = M.toInput(0, d);
+  intForm.date.value = src.date ?? todayISO(); intForm.date.max = todayISO();
+  intForm.note.value = src.note ?? '';
+  F.reset(intForm);
+  $('#intDlg').showModal(); intForm.from.focus();
+}
+F.bind(intForm, () => {
+  const amt = M.parse(intForm.amount.value, M.decimals(cur.currency));
+  return clean({
+    to: intForm.to.value === intForm.from.value ? 'Sender and receiver must be different people.' : null,
+    amount: typeof amt === 'string' ? amt : null,
+    date: validDate(intForm.date.value),
+    note: intForm.note.value.trim().length > 100 ? 'Keep the note under 100 characters.' : null,
+  });
+}, () => {
+  const data = { from: intForm.from.value, to: intForm.to.value, amount: M.parse(intForm.amount.value, M.decimals(cur.currency)), date: intForm.date.value, note: intForm.note.value.trim() };
+  if (intEditing) Object.assign(intEditing, data); else cur.tx.push({ id: uid(), type: 'internal', created: Date.now(), ...data });
+  $('#intDlg').close(); commit(intEditing ? 'Transfer updated' : 'Transfer recorded');
+});
+$('#intDelete').onclick = async () => {
+  if (!await Splitwise.confirm({ title: 'Delete this transfer?', body: `${nameOf(intEditing.from)} → ${nameOf(intEditing.to)}, ${fmt(intEditing.amount)}. Balances will be recalculated.`, ok: 'Delete transfer' })) return;
+  cur.tx = cur.tx.filter(x => x !== intEditing); $('#intDlg').close(); commit('Transfer deleted');
+};
+
+/* ---------- members: add to group / rename user ---------- */
+const memForm = $('#memForm');
+let memRename = null;
+function memToggle() { $('#memNew').hidden = !memRename && memForm.user.value !== NEW; }
+function openMember(renameId) {
+  memRename = renameId || null;
+  $('#memDlgTitle').textContent = memRename ? 'Rename' : 'Add member';
+  $('#memSubmit').textContent = memRename ? 'Save name' : 'Add member';
+  $('#memPick').hidden = !!memRename; $('#memNote').hidden = !!memRename;
+  const others = App.state.users.filter(u => !cur.members.includes(u.id));
+  memForm.user.innerHTML = others.map(u => `<option value="${u.id}">${esc(u.name)}</option>`).join('') + `<option value="${NEW}">New user…</option>`;
+  memForm.name.value = memRename ? nameOf(memRename) : '';
+  memToggle(); F.reset(memForm);
+  $('#memDlg').showModal(); (memRename ? memForm.name : memForm.user).focus();
+}
+memForm.user.addEventListener('change', memToggle);
+F.bind(memForm, () => {
+  if (memRename || memForm.user.value === NEW) return clean({ name: App.nameError(memForm.name.value.trim(), memRename) });
+  return clean({ user: App.user(memForm.user.value) ? null : 'Choose a person.' });
+}, () => {
+  const n = memForm.name.value.trim();
+  let id = memRename;
+  if (memRename) App.user(memRename).name = n;
+  else {
+    id = memForm.user.value === NEW ? App.addUser(n) : memForm.user.value;
+    cur.members.push(id);
+  }
+  $('#memDlg').close(); commit(memRename ? 'Name updated' : `${nameOf(id)} added to ${cur.name}`);
+  if (memRename && $('#detailDlg').open) openDetail(memRename);
+});
+
+let detId = null;
+function openDetail(id) {
+  detId = id;
+  const v = App.balances(cur).get(id), lines = [];
+  for (const t of cur.tx) {
+    if (t.type === 'payment') {
+      const share = App.shares(t, cur.members).get(id) || 0, paid = t.payer === id ? t.amount : 0;
+      if (!share && !paid) continue;
+      lines.push({ t, title: t.desc, meta: [paid && `Paid ${fmt(paid)}`, share && `share ${fmt(share)}`].filter(Boolean).join(' · '), v: paid - share });
+    } else {
+      if (t.from === id) lines.push({ t, title: `Paid ${nameOf(t.to)}`, meta: 'Internal · sent', v: t.amount });
+      if (t.to === id) lines.push({ t, title: `Received from ${nameOf(t.from)}`, meta: 'Internal · received', v: -t.amount });
+    }
+  }
+  lines.sort((a, b) => byNewest(a.t, b.t));
+  const n = esc(nameOf(id)), hist = App.hasHistory(cur, id);
+  $('#detTitle').textContent = nameOf(id);
+  $('#detBody').innerHTML = `
+    <div class="detail-head od-row">${avatar(id, 'lg')}<div class="od-stat od-fill"><span class="big-num num od-nowrap ${balClass(v)}">${fmtSigned(v)}</span><span class="muted">${v > 0 ? `${n} gets back` : v < 0 ? `${n} owes` : 'Settled up'}</span></div></div>
+    ${lines.length ? `<p class="note">Paid minus share for each payment, plus internal transfers sent, minus transfers received.</p>
+    <ul class="lines">${lines.map(l => `<li class="od-row"><div class="od-fill od-stack" style="--od-gap:0"><span class="od-truncate row-title">${esc(l.title)}</span><span class="row-meta">${fmtDate(l.t.date)} · ${l.meta}</span></div><span class="num od-nowrap od-fixed ${balClass(l.v)}">${fmtSigned(l.v)}</span></li>`).join('')}
+      <li class="od-row total-line"><span class="od-fill">Balance</span><span class="num od-nowrap od-fixed ${balClass(v)}">${fmtSigned(v)}</span></li></ul>`
+    : `<p class="note">${n} isn't part of any transaction in this group yet.</p>`}
+    ${hist ? `<p class="note">Members with transactions in this group can be renamed but not removed.</p>` : ''}`;
+  $('#detRemove').disabled = hist;
+  $('#detRemove').textContent = id === me ? 'Leave group' : 'Remove from group';
+  if (!$('#detailDlg').open) $('#detailDlg').showModal();
+}
+$('#detRename').onclick = () => openMember(detId);
+$('#detRemove').onclick = async () => {
+  const id = detId, self = id === me;
+  if (App.hasHistory(cur, id) || !await Splitwise.confirm({ title: self ? `Leave ${cur.name}?` : `Remove ${nameOf(id)}?`, body: self ? 'You can rejoin later with the invite code.' : `${nameOf(id)} will be removed from ${cur.name}. They can rejoin with the invite code.`, ok: self ? 'Leave group' : 'Remove member' })) return;
+  cur.members = cur.members.filter(x => x !== id); App.save(); $('#detailDlg').close();
+  if (self) { App.flash(`You left ${cur.name}`); location.href = 'index.html'; }
+  else commit(`${nameOf(id)} removed`);
+};
+
+/* ---------- settle up (records internal transfers) ---------- */
+function openSettle() {
+  const plan = App.settlePlan(App.balances(cur));
+  $('#setBody').innerHTML = plan.length ? `
+    <p class="note">The fewest internal transfers that bring every balance to zero. Marking one as paid records it, dated today.</p>
+    <ul class="plan">${plan.map((p, i) => `<li class="od-row">
+      <div class="od-fill od-stack" style="--od-gap:0"><span class="row-title od-row" style="--od-gap:6px"><span class="od-truncate">${esc(nameOf(p.from))}</span><span class="arrow" aria-label="pays">${I('arrow')}</span><span class="od-truncate">${esc(nameOf(p.to))}</span></span><span class="num od-nowrap">${fmt(p.amount)}</span></div>
+      <button class="btn secondary sm od-fixed" data-record="${i}">Mark as paid</button></li>`).join('')}</ul>`
+    : `<div class="empty"><span class="settled">${I('check')}Everyone is settled up</span><p>All balances are zero. Nothing to pay.</p></div>`;
+  $('#setBody').querySelectorAll('[data-record]').forEach(btn => btn.onclick = () => {
+    const p = plan[btn.dataset.record];
+    cur.tx.push({ id: uid(), type: 'internal', created: Date.now(), date: todayISO(), note: 'Settle up', ...p });
+    commit(`Recorded ${nameOf(p.from)} → ${nameOf(p.to)}`); openSettle();
+    ($('#setBody').querySelector('[data-record]') || $('#settleDlg [data-close]')).focus();
+  });
+  if (!$('#settleDlg').open) $('#settleDlg').showModal();
+}
+
+/* ---------- wiring ---------- */
+if (me && cur && cur.members.includes(me)) {
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-act],[data-member],[data-tx]');
+    if (!t) return;
+    if (t.dataset.member) return openDetail(t.dataset.member);
+    if (t.dataset.tx) { const x = cur.tx.find(y => y.id === t.dataset.tx); return x.type === 'payment' ? openPayment(x.id) : openInternal(x.id); }
+    ({ payment: () => openPayment(), internal: () => openInternal(), member: () => openMember(), invite: openInvite, settle: openSettle })[t.dataset.act]?.();
+  });
+  document.querySelectorAll('input[name=txFilter]').forEach(r => r.addEventListener('change', () => { txFilter = r.value; render(); }));
+  topbar(); render();
+  App.takeFlash();
+}
+</script>
+</body>
+</html>
