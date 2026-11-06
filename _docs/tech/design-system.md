@@ -289,9 +289,9 @@ re-binding. The `icon` macro prints `<span data-icon>`, and step 1 fills it.
 ## 6. Accessibility rules
 
 The templates keep each accessibility rule of the design. The rules are in
-[`design-guidelines.md`](./design-guidelines.md) §10. The app prints the balance labels "is owed",
+the accessibility rules of [`design-guidelines.md`](./design-guidelines.md). The app prints the balance labels "is owed",
 "owes" and "settled", with a sign (`+60.00 EUR`, `−30.00 EUR`). The design writes other words for
-the labels. See [`design-guidelines.md`](./design-guidelines.md) §8.7.
+the labels. See the balance amount rules in `design-guidelines.md`.
 
 ## 7. Words in the app
 

@@ -142,7 +142,7 @@ main way the browser talks to the server.
 | Server-rendered HTML | Rules and formatting stay in one language and one place. No client state to keep in sync | A single-page app: a build step and a second copy of the rules |
 | HTMX | It updates parts of a page with HTML from the server and adds no front-end framework | A client framework: more code than the product needs |
 | Vendored `htmx.min.js` | The version is pinned and the app works offline | A CDN link |
-| Own migration runner | Forward-only SQL files need about 50 lines of code | Alembic: it needs the ORM model |
+| Own migration runner | Forward-only SQL files need one short module | Alembic: it needs the ORM model |
 | SQLite | One file, no server, fits the local persistence of the MVP | A database server |
 | Services own transactions | One place decides what must succeed or fail together | Transactions in routes or repositories |
 | Design files as source | `_design/site/assets` is the source of CSS and component JS. The app copies them | Edited copies that drift |

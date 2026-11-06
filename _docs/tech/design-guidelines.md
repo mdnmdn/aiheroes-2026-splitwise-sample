@@ -132,14 +132,14 @@ behaves, not how the app works.
 | The sample user and the sample groups | Test data of the prototype only |
 | Markup that page scripts build with strings | Read for the markup shape. The app renders it with templates |
 
-`design-system.md` §2 maps each helper to its replacement in the app.
+The prototype helpers table of `design-system.md` maps each helper to its replacement in the app.
 
 ### 1.6 The vocabulary trap
 
 The design uses the word "payment" for an expense and "internal transfer" for a payment. The
 glossary reserves "payment" for a recorded transfer between two members. The app uses the glossary
-terms in every label, message and variable. [`design-system.md`](./design-system.md) §7 has the
-mapping table. The open decision is in [`../backlog.md`](../backlog.md). The class names
+terms in every label, message and variable. The section "Words in the app" of
+[`design-system.md`](./design-system.md) has the mapping table. The open decision is in [`../backlog.md`](../backlog.md). The class names
 `.tag.payment` and `.tag.internal`, the ids `payDlg` and `intDlg` and the data field `type:'payment'`
 are design identifiers. Do not read them as product terms. See the [glossary](../product/glossary.md).
 

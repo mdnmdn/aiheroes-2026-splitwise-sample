@@ -14,7 +14,7 @@ review_cycle: quarterly
 # Writing and updating docs
 
 This document is for everyone who is **not** on a documentation maintenance pass. That includes
-agents and humans who capture product thinking. Later, it includes agents and humans who change code.
+agents and humans who capture product thinking, and agents and humans who change code.
 
 **This document is self-sufficient.** It holds the fields, the placement rule and the cases where you
 can create a document. You do not need `librarian.md` for structure and maintenance passes.
@@ -32,7 +32,7 @@ balance.
 If you read nothing else:
 
 1. If a change or a conversation touched a claim, update the owning document in the same session.
-2. When git exists, put the document update in the same commit as the change.
+2. Put the document update in the same commit as the change.
 3. Edit in place. Do not move, split, rename or reorganize anything.
 4. Match the document you edit. Its shape is already correct.
 5. Write in the present tense. Write no line numbers and no `TODO`.
@@ -227,7 +227,7 @@ If your edit takes a document past about 500 lines, make the edit. Then file a s
 ## 7. Verification
 
 `verified` means: someone compared this document with its sources and it held. The sources are a
-capture in `inbox/`, a decision of a human, or later the code. `verified` does not mean "edited". That
+capture in `inbox/`, a decision of a human, or the code. `verified` does not mean "edited". That
 is `updated`.
 
 The tool can repair `updated`, because `updated` is a fact about the file. The tool never writes
@@ -246,8 +246,8 @@ There are three tiers:
 
 - `product/`, a feature `## Behaviour` section and any decision **prescribe**. If the source
   disagrees, the source is wrong, or a human must decide.
-- Research notes, `wip/` and `inbox/` **describe**. The document yields to its source. Fix the
-  document.
+- A feature `## Data` and `## Implementation` section, research notes, `wip/` and `inbox/`
+  **describe**. The document yields to its source. Fix the document.
 
 Do not edit a prescriptive document to match a later chat. That turns a guess into a specification.
 

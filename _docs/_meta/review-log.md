@@ -23,6 +23,7 @@ checks by their ids from the revision checklist in [`librarian.md`](./librarian.
 |---|---|---|---|---|
 | 2026-11-05 | setup | L1–L12 | — | library created from the sample scheme, phase product ideation |
 | 2026-11-05 | phase change | L1–L12 | — | phase changed from product ideation to development: `phases.md`, `authoring.md`, `AGENTS.md`, `Home.md` and `backlog.md` aligned |
+| 2026-11-05 | on request: full adherence check | L1–L12 | fixed 19 form issues in 9 files; 1 backlog entry; 3 feedback entries | phase alignment of authoring.md; cross-document section citations replaced by titles; descriptive drift fixed in balances, sign-in, architecture, guide-migration |
 
 ## Related docs
 

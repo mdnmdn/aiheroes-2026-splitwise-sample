@@ -20,7 +20,7 @@ applies the file once. The model is in [`architecture.md`](./architecture.md).
 ## 1. Rules
 
 - Name the file `NNNN_slug.sql`. Use the next free four-digit number and a snake case slug, for example `0003_add_expense_note.sql`.
-- Never edit a file that has been applied. The record says the file ran, so an edit makes databases differ.
+- Never edit a file that the runner applied. The record says the file ran, so an edit makes databases differ.
 - Never write a down migration. Migrations are forward only. To undo a change, add a new file.
 - Put one concern in one file. A failure then points to one change.
 - Write the backfill of data in the same file in SQL. Existing rows must satisfy the new schema.
@@ -107,7 +107,7 @@ Use a reset when you edit a migration that only your database ran, or when the d
 
 ## 5. Test a migration
 
-Write an integration test in `tests/unit/test_migrate.py`.
+Write a unit test in `tests/unit/test_migrate.py`.
 
 1. Create an empty temp database.
 2. Apply the migrations up to `NNNN-1`.

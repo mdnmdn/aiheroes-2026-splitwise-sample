@@ -110,7 +110,7 @@ The mutation route builds its response with the helpers of `core/htmx.py`. The h
 5. Put a Cancel button with `data-close` and the primary button in the footer.
 6. For a delete button, add `data-confirm-title`, `data-confirm-body` and `data-confirm-ok`. `app.js` shows the confirm dialog before the request.
 7. Add the `GET` route for the dialog. It returns the dialog template with default values.
-8. Add the mutation route. On success, it returns the response of section 5.4 of `design-system.md` with the event `close-dialog`.
+8. Add the mutation route. On success, it returns the mutation response of `design-system.md` with the event `close-dialog`.
 9. On a validation error, the route returns the form fragment again with status 422. The form keeps the user input.
 10. Add the opener to the page: `hx-get="<dialog URL>"`, `hx-target="#dialog-host"`, `hx-swap="innerHTML"`.
 11. Add tests for the dialog `GET`, for a valid post and for an invalid post that returns 422.
@@ -130,7 +130,7 @@ Start from the storybook. The storybook is the reference, so the macro copies it
 6. Print each value through autoescape. Never use `|safe` on user text.
 7. Do not compute money in the macro. Take a formatted string or call the filters `money` and `signed_money`.
 8. Add the aria attributes of the storybook. A parameter for an icon button label has no default.
-9. Add a row to the macro table in section 4 of `design-system.md`.
+9. Add a row to the component macro table of `design-system.md`.
 10. Use the macro in one template. Compare the result with the storybook, as in section 7.
 
 Name the macro in snake case. Use the glossary term for the thing that it shows: `expense_row`,
@@ -167,7 +167,7 @@ Check each new or changed page against its design page.
 8. Compare the markup. Each class in the design must be in the app, with no extra class.
 9. For a difference, decide which side is wrong. If the design is wrong, change the design first. If the template is wrong, fix the template.
 
-Words are the only allowed difference. The app uses glossary terms. Section 7 of
+Words are the only allowed difference. The app uses glossary terms. The section "Words in the app" of
 [`design-system.md`](./design-system.md) lists the mapping.
 
 ## Related docs

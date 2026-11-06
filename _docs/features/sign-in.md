@@ -104,7 +104,7 @@ The feature owns the table `users`.
 - The session holds no table. The token is `itsdangerous` `URLSafeSerializer` data with the user id.
 - `sessionStorage` of a tab holds `sw_user` (token), `sw_user_id` (user id) and `sw_resume` (path and time of the last resume).
 - The migration `app/migrations/0001_init.sql` creates the table. It creates the tables of the other features too.
-- `created_at` has no default. The repository writes it with `now_iso()`.
+- `created_at` has no default. The service gives `now_iso()` to `repo.insert`, which writes it.
 - The name is unique through the `NOCASE` collation of the column. No second index exists.
 
 ## Implementation

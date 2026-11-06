@@ -93,7 +93,7 @@ The feature owns no table. It reads these tables:
 | `groups` | `currency` |
 
 - The balance of a member comes from four row queries: members, expenses, shares and payments. The service adds the rows in Python and returns a map from member id to minor units.
-- The list of transactions is a union of `expenses` and `payments`. Each row has a `kind`, a date and an entry time.
+- The service merges the rows of `expenses` and the rows of `payments` into the list of transactions. Each row has a `kind`, a date and an entry time.
 - The app never stores a balance.
 
 ## Implementation
@@ -116,7 +116,7 @@ The feature owns no table. It reads these tables:
 
 The card and the list reload on the events `ledger-changed` and `members-changed`. The macros `stat` and `balance_amount` (`money.html`) and `settled_badge` (`feedback.html`) draw the card.
 
-The transaction list exists since step 3. The service function `transaction_list` in
+The service function `transaction_list` in
 `app/balances/service.py` builds the days and the rows. The region also reloads when the member
 selects a filter option. The request carries the selected option, so a reload keeps the filter.
 The route calls `require_member` of the groups feature, because the balances service cannot
