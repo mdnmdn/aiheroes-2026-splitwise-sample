@@ -7,9 +7,10 @@ kubiq-mode: bypassPermissions
 kubiq-model: opus
 kubiq-thinking: medium
 kubiq-id: librarian
-kubiq-updated: 2026-11-05T17:14:43.607Z
+kubiq-updated: 2026-11-05T22:48:40.030Z
 kubiq-tags: coordinator, planner
 kubiq-mcps: use-task, project-info, kubiq-archify, kubiq-ask, kubiq-browser
+kubiq-max-subagents: '3'
 ---
 
 # Librarian

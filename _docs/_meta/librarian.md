@@ -361,6 +361,7 @@ tidy prose.
 | `CLAUDE.md` | `@AGENTS.md` | Both tool preambles load the same rules |
 | `.claude/skills/ste-writing/` | The STE dialect as a skill | Agents that write procedures or `## Behaviour` find the dialect when they need it |
 | `.claude/agents/librarian.md` | The librarian agent: the reading order, the limits and the pass procedure of §8 | A coordinator delegates a pass to it. The pass runs in its own context |
+| `.claude/skills/librarian/` | A skill that loads the librarian agent file into the current session | The user runs a pass in the main session and can answer questions during the pass |
 
 `mise run docs-touched` is an optional channel. A pre-commit hook and role files can join later, when
 they earn their keep. **L10** does not require them.

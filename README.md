@@ -5,19 +5,10 @@ A web app in which a group records shared expenses and sees who owes whom.
 Stack: Python 3.13, FastAPI, Jinja2 with HTMX, SQLite. The tools come from [mise](https://mise.jdx.dev) and
 [uv](https://docs.astral.sh/uv/).
 
-## Install mise
-
-|OS|Install|Activate in the shell|
-|---|---|---|
-|macOS|`brew install mise` or `curl https://mise.run \| sh`|zsh: `echo 'eval "$(mise activate zsh)"' >> ~/.zshrc`|
-|Linux|`curl https://mise.run \| sh`|bash: `echo 'eval "$(mise activate bash)"' >> ~/.bashrc`|
-|Windows|`winget install jdx.mise` or `scoop install mise`|PowerShell: add `mise activate pwsh \| Out-String \| Invoke-Expression` to `$PROFILE`|
-
-Open a new shell, then run `mise --version`. In the repository, run `mise trust` once to allow
-`mise.toml`. Other methods and shells: [Installing mise](https://mise.jdx.dev/installing-mise.html)
-and [Getting started](https://mise.jdx.dev/getting-started.html).
 
 ## Quick start
+
+You need [mise](https://mise.jdx.dev). To install it, see [Install mise](#install-mise).
 
 ```sh
 mise install          # Python and uv
@@ -59,6 +50,20 @@ has the settings and details.
 |`_docs/`|The documentation library. Start at [`_docs/Home.md`](_docs/Home.md)|
 |`_tools/`|Support scripts for docs and design sync|
 |`_data/`|Local database. Not in git|
+
+
+## Install mise
+
+|OS|Install|Activate in the shell|
+|---|---|---|
+|macOS|`brew install mise` or `curl https://mise.run \| sh`|zsh: `echo 'eval "$(mise activate zsh)"' >> ~/.zshrc`|
+|Linux|`curl https://mise.run \| sh`|bash: `echo 'eval "$(mise activate bash)"' >> ~/.bashrc`|
+|Windows|`winget install jdx.mise` or `scoop install mise`|PowerShell: add `mise activate pwsh \| Out-String \| Invoke-Expression` to `$PROFILE`|
+
+Open a new shell, then run `mise --version`. In the repository, run `mise trust` once to allow
+`mise.toml`. Other methods and shells: [Installing mise](https://mise.jdx.dev/installing-mise.html)
+and [Getting started](https://mise.jdx.dev/getting-started.html).
+
 
 ## Documentation
 

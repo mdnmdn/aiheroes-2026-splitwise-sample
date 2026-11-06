@@ -14,8 +14,8 @@ SQLite. Follow the tech docs. Do not invent an implementation that they do not d
 | The meaning of a term | [`_docs/product/glossary.md`](_docs/product/glossary.md) |
 | Open questions | [`_docs/backlog.md`](_docs/backlog.md) |
 | Code in `app/`: skill for a feature, a page or an endpoint | [`.claude/skills/splitwise-fullstack/SKILL.md`](.claude/skills/splitwise-fullstack/SKILL.md) |
-| A task with many parts: how to coordinate subagents | [`.claude/skills/coordinator/SKILL.md`](.claude/skills/coordinator/SKILL.md) |
-| Keep `_docs/` in order: a maintenance pass, move or split a doc. Delegate to the librarian agent | [`.claude/agents/librarian.md`](.claude/agents/librarian.md) |
+| A task with many parts: how to coordinate subagents. Skill, or the agent that loads it as the main agent | [`.claude/skills/coordinator/SKILL.md`](.claude/skills/coordinator/SKILL.md), [`.claude/agents/coordinator.md`](.claude/agents/coordinator.md) |
+| Keep `_docs/` in order: a maintenance pass, move or split a doc. Delegate to the librarian agent, or load the librarian skill | [`.claude/agents/librarian.md`](.claude/agents/librarian.md), [`.claude/skills/librarian/SKILL.md`](.claude/skills/librarian/SKILL.md) |
 | Architecture and layers | [`_docs/tech/architecture.md`](_docs/tech/architecture.md) |
 | Where a file goes | [`_docs/tech/project-structure.md`](_docs/tech/project-structure.md) |
 | Settings, logging, errors, tests, code rules | [`_docs/tech/practices.md`](_docs/tech/practices.md) |
