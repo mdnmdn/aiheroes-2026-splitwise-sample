@@ -6,7 +6,7 @@ status: current
 summary: How to build and run Splitwise Lite on one machine. The mise tools and tasks, the .env files, the database file in _data/ and where the logs go.
 read_when: you set up the project, run the app or its tests, reset the dev database, or change a mise task
 updated: 2026-11-05
-verified: 2026-11-05
+verified: 2026-11-06
 source_anchors: [mise.toml, .env.example, pyproject.toml, app/core/config.py, app/core/db.py, app/core/migrate.py, _tools/design_sync.py, tests/conftest.py]
 depends_on: [tech-architecture, tech-practices]
 review_cycle: quarterly
@@ -26,8 +26,10 @@ and runs the tasks. `uv` manages the Python packages. The settings are in
 | `uv` | latest | `mise.toml` |
 | Python packages | pinned | `pyproject.toml` and `uv.lock` |
 
-`mise.toml` sets `UV_PYTHON_PREFERENCE=only-system` and `UV_PYTHON_DOWNLOADS=never`. `uv` then uses
-the Python that `mise` installs.
+`mise.toml` sets `UV_PYTHON=3.13`, `UV_PYTHON_PREFERENCE=only-system` and `UV_PYTHON_DOWNLOADS=never`.
+`uv` then uses the Python that `mise` installs. Keep `UV_PYTHON` equal to the Python version of
+`[tools]`. If `uv` picks a newer Python, for example from the Windows `py` launcher, a package with no
+wheel for that version fails to build.
 
 ## 2. Tasks
 

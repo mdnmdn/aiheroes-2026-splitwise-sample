@@ -7,6 +7,9 @@ uv = "latest"
 
 [env]
 # uv uses the Python that mise installs. It does not download a second one.
+# UV_PYTHON stops uv from picking a newer system Python (for example 3.15 from the Windows `py`
+# launcher) that has no PyYAML wheel. Keep it equal to the python version in [tools].
+UV_PYTHON = "3.13"
 UV_PYTHON_PREFERENCE = "only-system"
 UV_PYTHON_DOWNLOADS = "never"
 
