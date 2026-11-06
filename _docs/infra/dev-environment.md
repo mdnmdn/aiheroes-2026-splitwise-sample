@@ -26,9 +26,9 @@ and runs the tasks. `uv` manages the Python packages. The settings are in
 | `uv` | latest | `mise.toml` |
 | Python packages | pinned | `pyproject.toml` and `uv.lock` |
 
-`mise.toml` sets `UV_PYTHON=3.13`, `UV_PYTHON_PREFERENCE=only-system` and `UV_PYTHON_DOWNLOADS=never`.
-`uv` then uses the Python that `mise` installs. Keep `UV_PYTHON` equal to the Python version of
-`[tools]`. If `uv` picks a newer Python, for example from the Windows `py` launcher, a package with no
+`.python-version` holds `3.13`. `uv` reads it also outside `mise`. `mise.toml` sets `UV_PYTHON=3.13`, `UV_PYTHON_PREFERENCE=only-system` and `UV_PYTHON_DOWNLOADS=never`.
+`uv` then uses the Python that `mise` installs. Keep `UV_PYTHON` and `.python-version` equal to
+the Python version of `[tools]`. If `uv` picks a newer Python, for example from the Windows `py` launcher, a package with no
 wheel for that version fails to build.
 
 ## 2. Tasks
